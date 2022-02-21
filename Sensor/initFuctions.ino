@@ -17,7 +17,7 @@ void initiateGPS() {
   //GPS.begin(9600);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); //(RMC = recommended minimum)
   //Denna typ av data innehåller infon vi behöver
-  //Säger åt GPSen att ge oss denna typ av data
+  //Säger åt GPSen att ge oss denna typ av data 
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
   GPS.sendCommand(PGCMD_ANTENNA);
   delay(1000);
