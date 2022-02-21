@@ -2,40 +2,40 @@ clear;
 close all;
 clc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Detta script har anvÃ¤nts fÃ¶r att visualisera data uppmÃ¤tt med LCAQMP.
-% Det Ã¤r lite rÃ¶rigt, men funkar helt ok fÃ¶r det mesta vid det hÃ¤r
-% laget. Jag fÃ¶rsÃ¶ker fÃ¶rklara lite vad alla delar gÃ¶r och varfÃ¶r de Ã¤r
-% dÃ¤r i kommentarer, men jag Ã¤r 100 % sÃ¤ker pÃ¥ att saker fortfarande Ã¤r 
-% oklara. Ni fÃ¥r gÃ¤rna hÃ¶ra av er om ni har funderingar sÃ¥ kan jag fÃ¶rsÃ¶ka 
-% fÃ¶rklara om jag har tid :) Vill ni ha allmÃ¤n uppstart eller nÃ¥gon form
-% av genomgÃ¥ng kan ni ocksÃ¥ hÃ¶ra av er sÃ¥ kan vi nog lÃ¶sa det!
+% Detta script har använts för att visualisera data uppmätt med LCAQMP.
+% Det är lite rörigt, men funkar helt ok för det mesta vid det här
+% laget. Jag försöker förklara lite vad alla delar gör och varför de är
+% där i kommentarer, men jag är 100 % säker på att saker fortfarande är 
+% oklara. Ni får gärna höra av er om ni har funderingar så kan jag försöka 
+% förklara om jag har tid :) Vill ni ha allmän uppstart eller någon form
+% av genomgång kan ni också höra av er så kan vi nog lösa det!
 % //Axel Eiman
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Namn pÃ¥ mÃ¤tningen
-input = inputdlg("Namn pÃ¥ mÃ¤tning", "Namn pÃ¥ mÃ¤tning");
+%% Namn på mätningen
+input = inputdlg("Namn på mätning", "Namn på mätning");
 if input == ""
-    meas_name = 'Nordstan och Ã„nggÃ¥rdsbergen, ';                            % Ã„ndra fÃ¶r att lÃ¤gga till titel vid graferna
+    meas_name = 'Nordstan och änggårdsbergen, ';                            % ändra för att lägga till titel vid graferna
 else 
     meas_name = input;
 end
-% meas_name = 'Nordstan och Ã„nggÃ¥rdsbergen, ';
-%% Ã¶ppna fÃ¶nster fÃ¶r att vÃ¤lja .csv data
+% meas_name = 'Nordstan och änggårdsbergen, ';
+%% Öppna fönster för att välja .csv data
 tic;
 disp('Choosing and loadingb csv file into Data struct')
-name = string;                                                              % name kommer innehÃ¥lla alla namn
+name = string;                                                              % name kommer innehålla alla namn
 [FileID, path] = uigetfile('*.csv','Select .CSV file from LCAQMP to evaluate','MultiSelect', 'on');
-FileID = cellstr(FileID);                                                   % Namn pÃ¥ filen (string i en cell)
-LCAQMP_used = length(FileID);                                               % Ã„ndrar till antalet anvÃ¤nda.  
+FileID = cellstr(FileID);                                                   % Namn på filen (string i en cell)
+LCAQMP_used = length(FileID);                                               % ändrar till antalet använda.  
 
 for i = 1:LCAQMP_used
-    name(i) = FileID{i}(1:end-7);                                           % end-4 tar bort ".csv" frÃ¥n filnamnen, end-7 tar bort "-XX.csv"
+    name(i) = FileID{i}(1:end-7);                                           % end-4 tar bort ".csv" från filnamnen, end-7 tar bort "-XX.csv"
     FileDir = append(path,FileID{i});
     opts = detectImportOptions(FileDir);
     opts.VariableNamesLine = 1;
     Data.(name(i)) = readtable(FileDir,opts,'ReadVariableNames', true);    % Sparar till Data.UNITX
     %Test.(name(i)) = readtable(FileDir,opts,'ReadVariableNames', false);
 end
-fields = fieldnames(Data.(name{1}));
+fields = fieldnames(Data.(name{5}));
 if LCAQMP_used > 10 || LCAQMP_used < 0
     msgbox('Incorrect value for no of LCAQMP');     
     error('Incorrect value for no of LCAQMP');      
@@ -43,14 +43,14 @@ end
 
 toc
 %% Skapa storhetsvektorer
-% LÃ¤ser frÃ¥n Data structen till celler fÃ¶r varje variabel. Exakt varfÃ¶r Ã¤r
-% lite oklart, har inte Ã¤ndrat frÃ¥n fÃ¶regÃ¥ende Ã¥r. 
+% Läser från Data structen till celler för varje variabel. Exakt varför är
+% lite oklart, har inte ändrat från föregående år. 
 tic;
 disp('Making individual vectors for data...')
 
-LCAQMP_units = zeros(1,10);                                                 % vektor som visar vilka enheter som anvÃ¤nts
+LCAQMP_units = zeros(1,10);                                                 % vektor som visar vilka enheter som använts
 
-for i = 1:length(name)                                                      % Loopar genom en gÃ¥ng fÃ¶r varje fil
+for i = 1:length(name)                                                      % Loopar genom en gång för varje fil
     unit = name(i);                                                         % filnamn (UNIT5), string
     unitID = regexp(unit,'\d*','Match');
     unitID = str2double(unitID);
@@ -67,20 +67,20 @@ for i = 1:length(name)                                                      % Lo
 %     eval(sprintf('H{%d} = Data.%s.Var6', unitID,unit));
 %     eval(sprintf('CO2{%d} = Data.%s.Var21', unitID,unit));                  % COzir filtered
 %     eval(sprintf('VOC{%d} = Data.%s.Var9', unitID,unit));
-%     eval(sprintf('GPSYear{%d} = Data.%s.Var10 + 2000', unitID,unit));       % + 2000 fÃ¶r att fÃ¥ helt Ã¥rtal. Kan bli knepigt vid GPS-fel.
+%     eval(sprintf('GPSYear{%d} = Data.%s.Var10 + 2000', unitID,unit));       % + 2000 för att få helt årtal. Kan bli knepigt vid GPS-fel.
 %     eval(sprintf('GPSMonth{%d} = Data.%s.Var11', unitID,unit));
 %     eval(sprintf('GPSDay{%d} = Data.%s.Var12', unitID,unit));
-%     eval(sprintf('GPSHour{%d} = Data.%s.Var13', unitID,unit));              % Timmarna frÃ¥n GPSen Ã¤r lite wonky ibland, kolla sÃ¥ de stÃ¤mmer Ã¶verens i slutÃ¤ndan fÃ¶r sÃ¤kerhets skull 
+%     eval(sprintf('GPSHour{%d} = Data.%s.Var13', unitID,unit));              % Timmarna från GPSen är lite wonky ibland, kolla så de stämmer överens i slutändan för säkerhets skull 
 %     eval(sprintf('GPSMin{%d} = Data.%s.Var14', unitID,unit));           
 %     eval(sprintf('GPSSek{%d} = Data.%s.Var15', unitID,unit));
 %     eval(sprintf('GPSsat{%d} = Data.%s.Var18', unitID,unit));
 %     eval(sprintf('GPSfix{%d} = Data.%s.Var19', unitID,unit));
     
-    % Denna del var tÃ¤nkt att lÃ¶sa sÃ¥ det gÃ¥r att kÃ¶ra med filer som bÃ¥de
-    % har skapats med arduinokod anpassad fÃ¶r NO2 och O3 och gammal kod
-    % (som har fÃ¤rre kolumner i csv-filen), tror dock alla plattformar
-    % uppdaterats med arduinokod som lÃ¶ser detta genom att fylla i massa
-    % nollor istÃ¤llet.
+    % Denna del var tänkt att lösa så det går att köra med filer som både
+    % har skapats med arduinokod anpassad för NO2 och O3 och gammal kod
+    % (som har färre kolumner i csv-filen), tror dock alla plattformar
+    % uppdaterats med arduinokod som löser detta genom att fylla i massa
+    % nollor istället.
 %     if size(eval(sprintf('Data.%s', unit)), 2) == 29        
 %         eval(sprintf('errors{%d} = Data.%s.Var29', unitID,unit));   
 %         eval(sprintf('NO2{%d} = Data.%s.Var26', unitID,unit));
@@ -96,14 +96,14 @@ end
 disp('Making individual vectors for data...')
 toc
 
-%% skapar en tidsvektor med t0 dÃ¥ GPS har connection
-% HÃ¤r bÃ¶rjar den knepiga processen att synka alla till en gemensam tid.
-% Tanken Ã¤r att alla ska ha fÃ¥tt GPS-uppkoppling sÃ¥ man Ã¤r sÃ¤ker pÃ¥ att
-% GPS-tiderna stÃ¤mmer fÃ¶r alla mÃ¤tare. NÃ¤r GPSfix har gett 1 bÃ¶r GPSen
-% funka, och dÃ¤rfÃ¶r tas vÃ¤rden innan detta bort fÃ¶r att undvika problem som
-% att GPSen sÃ¤ger att Ã¥ret Ã¤r 80.
+%% skapar en tidsvektor med t0 då GPS har connection
+% Här börjar den knepiga processen att synka alla till en gemensam tid.
+% Tanken är att alla ska ha fått GPS-uppkoppling så man är säker på att
+% GPS-tiderna stämmer för alla mätare. När GPSfix har gett 1 bör GPSen
+% funka, och därför tas värden innan detta bort för att undvika problem som
+% att GPSen säger att året är 80.
 
-%Vill tillÃ¤gga att GPSen emellanÃ¥t gett helt random vÃ¤rden
+%Vill tillägga att GPSen emellanåt gett helt random värden
 
 firstGPS_fix = zeros(1,10);
 tic;
@@ -113,15 +113,15 @@ for i = 1:length(name)
     unitID = regexp(unit,'\d*','Match');
     unitID = str2double(unitID);
     
-    if any(Data.(name{i}).GPS_fix == 0 )                                             % Om GPS aldrig har mottagning, ta bort fÃ¶rsta 10 raderna 
-                                                                            %(varfÃ¶r dÃ¥? kanske fÃ¶r att klockan inte Ã¤r startad de fÃ¶rsta mÃ¤tpunkterna eller nÃ¥t)
+    if any(Data.(name{i}).GPS_fix == 0 )                                             % Om GPS aldrig har mottagning, ta bort första 10 raderna 
+                                                                            %(varför då? kanske för att klockan inte är startad de första mätpunkterna eller nåt)
         firstGPS_fix(unitID) = length(Data.(name{i}).GPS_fix) - 10;
-        str = sprintf('OBS: ingen mottagning fÃ¶r gps pÃ¥ LCAQMP#%i under mÃ¤tningen',unitID);
+        str = sprintf('OBS: ingen mottagning för gps på LCAQMP#%i under mätningen',unitID);
         msgbox(str);
     else
-        for ii = length(Data.(name{i}).GPS_fix):-1:1                                % Loopar fÃ¶r att hitta fÃ¶rsta tillfÃ¤llet dÃ¥ GPS har mottagning
-                                                                            % if 'GPS' not in errors,  dvs fÃ¶r alla vÃ¤rden som gpsen
-                                                                            % funkar: (BehÃ¶ver inte visa position som det verkar, eller rÃ¤tt tid fÃ¶r den delen?)
+        for ii = length(Data.(name{i}).GPS_fix):-1:1                                % Loopar för att hitta första tillfället då GPS har mottagning
+                                                                            % if 'GPS' not in errors,  dvs för alla värden som gpsen
+                                                                            % funkar: (Behöver inte visa position som det verkar, eller rätt tid för den delen?)
             if contains(char(Data.(name{i}).Var29{ii}),'GPS') == 0
                 firstGPS_fix(unitID) = length(Data.(name{i}).GPS_fix) - ii;
 
@@ -129,26 +129,26 @@ for i = 1:length(name)
         end
     end
     
-%     if any(GPSfix{unitID}) == 0                                             % Om GPS aldrig har mottagning, ta bort fÃ¶rsta 10 raderna 
-%                                                                             %(varfÃ¶r dÃ¥? kanske fÃ¶r att klockan inte Ã¤r startad de fÃ¶rsta mÃ¤tpunkterna eller nÃ¥t)
+%     if any(GPSfix{unitID}) == 0                                             % Om GPS aldrig har mottagning, ta bort första 10 raderna 
+%                                                                             %(varför då? kanske för att klockan inte är startad de första mätpunkterna eller nåt)
 %         firstGPS_fix(unitID) = length(GPSfix{unitID}) - 10;
-%         str = sprintf('OBS: ingen mottagning fÃ¶r gps pÃ¥ LCAQMP#%i under mÃ¤tningen',unitID);
+%         str = sprintf('OBS: ingen mottagning för gps på LCAQMP#%i under mätningen',unitID);
 %         msgbox(str);
 %     else
-%         for ii = length(GPSfix{unitID}):-1:1                                % Loopar fÃ¶r att hitta fÃ¶rsta tillfÃ¤llet dÃ¥ GPS har mottagning
-%                                                                             % if 'GPS' not in errors,  dvs fÃ¶r alla vÃ¤rden som gpsen
-%                                                                             % funkar: (BehÃ¶ver inte visa position som det verkar, eller rÃ¤tt tid fÃ¶r den delen?)
+%         for ii = length(GPSfix{unitID}):-1:1                                % Loopar för att hitta första tillfället då GPS har mottagning
+%                                                                             % if 'GPS' not in errors,  dvs för alla värden som gpsen
+%                                                                             % funkar: (Behöver inte visa position som det verkar, eller rätt tid för den delen?)
 %             if contains(char(errors{unitID}(ii)),'GPS') == 0
 %                 firstGPS_fix(unitID) = length(GPSfix{unitID}) - ii;
 % 
 %             end
 %         end
 %     end
-  % Ã„ndra GPSfix till att ge vanligt index. BehÃ¶ver nog inte vara sÃ¥hÃ¤r men
+  % ändra GPSfix till att ge vanligt index. Behöver nog inte vara såhär men
   % har inte pallat fixa :)
   firstGPS_fix(unitID) = length(Data.(name{i}).GPS_fix) - firstGPS_fix(unitID);
  
-  % Tar bort alla vÃ¤rden innan GPSfix
+  % Tar bort alla värden innan GPSfix
 %   t{1,unitID}(1:firstGPS_fix(unitID)) = [];
 %   PM25{1,unitID}(1:firstGPS_fix(unitID)) = [];
 %   PM10{1,unitID}(1:firstGPS_fix(unitID)) = [];
@@ -173,12 +173,12 @@ for i = 1:length(name)
 
 toc
 %% Plot Setup
-% skapar en gemensam tidslinje fÃ¶r att plotta pÃ¥ "x".
-% t0 sÃ¤tts efter den enhet som sist bÃ¶rjade logga av alla till den som
-% fÃ¶rst avslutas
-% Denna del Ã¤r rejÃ¤lt stÃ¶kig, men tar iaf inte 15 min att kÃ¶ra som den
-% gjort tidigare. Kan vara en del grejer som inte behÃ¶vs, samt allmÃ¤nt
-% snyggas till en hel del om man kÃ¤nner att det Ã¤r viktigt.
+% skapar en gemensam tidslinje för att plotta på "x".
+% t0 sätts efter den enhet som sist började logga av alla till den som
+% först avslutas
+% Denna del är rejält stökig, men tar iaf inte 15 min att köra som den
+% gjort tidigare. Kan vara en del grejer som inte behövs, samt allmänt
+% snyggas till en hel del om man känner att det är viktigt.
 
 tic;
 disp('Setting up plot and clock...')
@@ -195,8 +195,8 @@ for i = 1:length(name)
     
         time{i} = datetime(Data.(name{i}).GPS_year,Data.(name{i}).GPS_month,Data.(name{i}).GPS_day, Data.(name{i}).GPS_hour,Data.(name{i}).GPS_minute,Data.(name{i}).GPS_seconds);
         timeDN{i} = datenum(time{i});
-        mini = 0;
-        for jj = 1:length(Data.(name{i}).GPS_hour)                                      % Hittar fÃ¶rsta tiden utan fel
+        mini = 1;
+        for jj = 1:length(Data.(name{i}).GPS_hour)                                      % Hittar första tiden utan fel
             if ~contains(char(Data.(name{i}).Var29{jj}),'GPS') &&...
                mini == 0 && 2001 < Data.(name{i}).GPS_year(jj) &&...
                Data.(name{i}).GPS_year(jj) < 2099
@@ -205,11 +205,11 @@ for i = 1:length(name)
                 maxi = jj;
             end                    
         end
-        clock_startstop(1,i) = time{i}(mini);                             % Dessa anger start & slutvÃ¤rde
+        clock_startstop(1,i) = time{i}(mini);                             % Dessa anger start & slutvärde
         clock_startstop(2,i) = time{i}(maxi);
 end
 
-% for ii = 1:length(LCAQMP_units)                                             % Loopar genom de mÃ¤tarna som anvÃ¤nds, ex 5 & 9
+% for ii = 1:length(LCAQMP_units)                                             % Loopar genom de mätarna som används, ex 5 & 9
 %     if LCAQMP_units(ii) == 1
 %         fprintf(" ...for unit %i\n", ii)
 %         for k = 1:length(GPSHour{ii})
@@ -220,21 +220,21 @@ end
 %         time{ii} = datetime(GPSYear{ii},GPSMonth{ii},GPSDay{ii}, GPSHour{ii},GPSMin{ii},GPSSek{ii});
 %         timeDN{ii} = datenum(time{ii});
 %         mini = 0;
-%         for jj = 1:length(GPSHour{ii})                                      % Hittar fÃ¶rsta tiden utan fel
+%         for jj = 1:length(GPSHour{ii})                                      % Hittar första tiden utan fel
 %             if ~contains(char(errors{ii}(jj)),'GPS') && mini == 0 && 2001 < GPSYear{ii}(jj) && GPSYear{ii}(jj) < 2079
 %                 mini = jj;
 %             elseif ~contains(char(errors{ii}(jj)),'GPS') && mini ~= 0
 %                 maxi = jj;
 %             end                    
 %         end
-%         clock_startstop(1,ii) = time{ii}(mini);                             % Dessa anger start & slutvÃ¤rde
+%         clock_startstop(1,ii) = time{ii}(mini);                             % Dessa anger start & slutvärde
 %         clock_startstop(2,ii) = time{ii}(maxi);
 %     end
 % end
 toc
 %%
-% Loopar fÃ¶r att hitta den tidpunkt dÃ¥ samtliga enheter loggar samt den
-% tidpunkt dÃ¥ fÃ¶rsta enheten stÃ¤ngs av. 
+% Loopar för att hitta den tidpunkt då samtliga enheter loggar samt den
+% tidpunkt då första enheten stängs av. 
 tic;
 disp('Finding start and end time...')
 FirstTime = datetime(2000,01,01, 00,00,00);
@@ -246,12 +246,12 @@ for i = 1:length(name)
     %if LCAQMP_units(i) == 1
         minNew = clock_startstop(1,i);
         maxNew = clock_startstop(2,i);
-        if minNew > minPrev                                                 %Hittar den stÃ¶rsta minimivÃ¤rde pÃ¥ klockorna, alltsÃ¥ den sista som sÃ¤tts pÃ¥
+        if minNew > minPrev                                                 %Hittar den största minimivärde på klockorna, alltså den sista som sätts på
             starttime = minNew;
             minPrev = minNew;
             unitLatest_min = i;
         end
-        if maxNew < maxPrev                                                 % Hittar det minsta maxvÃ¤rde, den fÃ¶rsta som stÃ¤ngs av
+        if maxNew < maxPrev                                                 % Hittar det minsta maxvärde, den första som stängs av
             endtime = maxNew;
             maxPrev = maxNew;
             unitLatest_max = i;
@@ -259,7 +259,7 @@ for i = 1:length(name)
     %end
 end
 formatIn = 'yyyy-mm-dd HH:MM:SS';
-StartTime = datenum(starttime);%,formatIn);                                 %Dessa verkar vara fÃ¶r att ordna plot
+StartTime = datenum(starttime);%,formatIn);                                 %Dessa verkar vara för att ordna plot
 EndTime = datenum(endtime);%,formatIn);
 OneSecond = 1/3600/24;
 OneMin = OneSecond*60;
@@ -273,16 +273,16 @@ disp('Syncing up measurement data...')
 commonstart = [];commonend = [];
 for i = 1:length(name)
     %if LCAQMP_units(i) == 1
-        % nedan ska ange index fÃ¶r gemensam start- respektive sluttid fÃ¶r
-        % alla mÃ¤tare
+        % nedan ska ange index för gemensam start- respektive sluttid för
+        % alla mätare
         commonstart(i) = find(timeDN{i} >= StartTime & timeDN{i}... 
-        < datenum(FinalTime), 1);                                           % find() funkar ej fÃ¶r datetime, dÃ¤rav Datenum
-        commonend(i) = find(timeDN{i} <= EndTime, 1, 'last');               % Fuckar gpsen upp Ã¤r denna kÃ¶rd fÃ¶r tillfÃ¤llet. 
-                                                                            % (Har inte koll pÃ¥ exakt vad som funkar och inte nÃ¤r GPSen fÃ¥r spatt, hoppas bara att den inte fÃ¥r det)
+        < datenum(FinalTime), 1);                                           % find() funkar ej för datetime, därav Datenum
+        commonend(i) = find(timeDN{i} <= EndTime, 1, 'last');               % Fuckar gpsen upp är denna körd för tillfället. 
+                                                                            % (Har inte koll på exakt vad som funkar och inte när GPSen får spatt, hoppas bara att den inte får det)
 
-        % Ã„ndrar vektorerna till att endast omfatta det gemensamma
+        % ändrar vektorerna till att endast omfatta det gemensamma
         % tidsspannet
-        timespan = -diff([commonstart(i) commonend(i)]);                    % Hur mÃ¥nga mÃ¤tningar i spannet minus ett
+        timespan = -diff([commonstart(i) commonend(i)]);                    % Hur många mätningar i spannet minus ett
         
         for j = 1:length(fields)-3
             
@@ -295,7 +295,7 @@ for i = 1:length(name)
 %         T{1,i} = T{1, i}(commonstart(i):commonend(i));
 %         H{1,i} = H{1, i}(commonstart(i):commonend(i));
 %         CO2{1,i} = CO2{1, i}(commonstart(i):commonend(i));
-%         tCO2{1, i} = tCO2{1, i}(commonstart(i):commonend(i));               % Verkar vara nÃ¥got med att man tar bort co2vÃ¤rden och den behÃ¶ver lika lÃ¥ng tidsvektor?
+%         tCO2{1, i} = tCO2{1, i}(commonstart(i):commonend(i));               % Verkar vara något med att man tar bort co2värden och den behöver lika lång tidsvektor?
 %         VOC{1, i} = VOC{1, i}(commonstart(i):commonend(i));
 %         P{1, i} = P{1, i}(commonstart(i):commonend(i));
 %         
@@ -310,7 +310,7 @@ for i = 1:length(name)
 %         GPSHour{1, i} = GPSHour{1, i}(commonstart(i):commonend(i));
 %         GPSMin{1, i} = GPSMin{1, i}(commonstart(i):commonend(i));
 %         GPSSek{1, i} = GPSSek{1, i}(commonstart(i):commonend(i));
-        initial_time = DataCommon.(name{i}).(fields{1})(1);                                          % Tid fÃ¶r det fÃ¶rsta mÃ¤tvÃ¤rdet som kommer med, lÃ¤gger plotten frÃ¥n noll
+        initial_time = DataCommon.(name{i}).(fields{1})(1);                                          % Tid för det första mätvärdet som kommer med, lägger plotten från noll
         DataCommon.(name{i}).(fields{1}) = DataCommon.(name{i}).(fields{1}) - initial_time;
     %end
 end   
@@ -318,15 +318,15 @@ end
 starttime_date = datestr(starttime, ' yy-mm-dd'); 
 endtime_date = datestr(endtime, ' yy-mm-dd');
 toc
-%% LÃ¤gger till datum fÃ¶r mÃ¤tningen i titel
+%% Lägger till datum för mätningen i titel
 if starttime_date == endtime_date
     meas_name = strcat(meas_name, starttime_date);
 elseif any(starttime_date ~= endtime_date)
     meas_name = strcat(meas_name, starttime_date, ' to ', endtime_date);
 end
 toc
-%% UtvÃ¤rderar CO2 sensorn, plockar ut felvÃ¤rden
-% CO2 sensorn har mÃ¶jlighet att mÃ¤ta mellan 0-5000. 
+%% Utvärderar CO2 sensorn, plockar ut felvärden
+% CO2 sensorn har möjlighet att mäta mellan 0-5000. 
 tic;
 disp('Evaluating CO2 values...')
     
@@ -335,12 +335,12 @@ disp('Evaluating CO2 values...')
 %     unitID = regexp(unit,'\d*','Match');
 %     unitID = str2double(unitID);        
 % 
-%     initial_time = tCO2{unitID}(1);                                         % tid fÃ¶r det fÃ¶rsta mÃ¤tvÃ¤rdet som kommer med
+%     initial_time = tCO2{unitID}(1);                                         % tid för det första mätvärdet som kommer med
 %     tCO2{unitID} = tCO2{unitID} - initial_time;
 %     CO2error = 0;
     for i = 1:length(DataCommon.(name{i}).CozIr_Co2_filtered(1))
         if Data.(name{i}).CozIr_Co2_filtered(1) > 5000 %|| CO2{unitID}(ii) < 50
-            msgbox('FÃ¶r hÃ¶ga vÃ¤rden fÃ¶r CO2 pÃ¥ LCAQMP#%i',name(i));
+            msgbox('För höga värden för CO2 på LCAQMP#%i',name(i));
             CO2error = 1;
         end
     end
@@ -348,7 +348,7 @@ disp('Evaluating CO2 values...')
 %         msgbox(str)
 %     end
     for i = 1:length(DataCommon.(name{i}).CozIr_Co2_filtered(1))
-    % Tar bort vÃ¤rden som innebÃ¤r att de troligtvis inte stÃ¤mmer
+    % Tar bort värden som innebär att de troligtvis inte stämmer
     DataCommon.(name{i}).CozIr_Co2_filtered(Data.(name{i}).CozIr_Co2_filtered>=5000) = nan;
     DataCommon.(name{i}).CozIr_Co2_filtered(Data.(name{i}).CozIr_Co2_filtered<1) = nan;
     end
@@ -359,30 +359,30 @@ toc
 tic;
 disp('Creating plots...')
 
-multiplot = 2;                                                              % Ã¤ndras till 1 eller 0
+multiplot = 2;                                                              % ändras till 1 eller 0
 plotcolor = {'#A2142F', '#0000FF', '#00FF00', '#FF0000', '#00FFFF',...
     '#FF00FF', '#D95319', '#EDB120', '#7E2F8E', '#FFFF00'};
 figure('units','normalized','outerposition',[0 0 1 1]);
 
 
-% Skapar plottar fÃ¶r olika fall av indata
-% Plottar ut LCAQMP, ifall den Ã¤r med i mÃ¤tningen
-% TvÃ¥ fall; fÃ¶r 1-2 LCAQMP plottas bÃ¥de PM2.5 och Pm10 i samma graf
-% annars vid LCAQMP>2 sÃ¥ plottas PM2.5 och PM10 i enskilda fÃ¶nster
+% Skapar plottar för olika fall av indata
+% Plottar ut LCAQMP, ifall den är med i mätningen
+% Två fall; för 1-2 LCAQMP plottas både PM2.5 och Pm10 i samma graf
+% annars vid LCAQMP>2 så plottas PM2.5 och PM10 i enskilda fönster
 tic;
 disp('Plotting...')
 
-% Glidande medelvÃ¤rde fÃ¶r att undvika brus
+% Glidande medelvärde för att undvika brus
 moving_mean_amount =899;
 for i = 1:length(name)
 
     %if LCAQMP_units(i) == 1
 
-        if length(name) <= 2                                                 % LÃ¤gger pm2.5 och pm10 i samma fÃ¶nster
+        if length(name) <= 2                                                 % Lägger pm2.5 och pm10 i samma fönster
             multiplot = 0;      
             subplot(2,5,[1:2,6:7]);hold on      
             plot(sort(DataCommon.(name{i}).processor_millis),movmean(DataCommon.(name{i}).SDS011_pm25, moving_mean_amount),'-',...
-            'Color',plotcolor{i},'LineWidth',1.5);                          % Ã¤ndra dessa till i???
+            'Color',plotcolor{i},'LineWidth',1.5);                          % ändra dessa till i???
             plot(sort(DataCommon.(name{i}).processor_millis),movmean(DataCommon.(name{i}).SDS011_pm10, moving_mean_amount),':',...
             'Color',plotcolor{i},'LineWidth',1.5);
             subplot(2,5,3);hold on
@@ -404,7 +404,7 @@ for i = 1:length(name)
                 'LineStyle', 'none');
             end
         else
-            multiplot = 1;                                                  % LÃ¤gger pm2.5 och pm10 i olika fÃ¶nster
+            multiplot = 1;                                                  % Lägger pm2.5 och pm10 i olika fönster
             subplot(2,5,[1,2])
             plot(sort(DataCommon.(name{i}).processor_millis),movmean(DataCommon.(name{i}).SDS011_pm25, moving_mean_amount),...
             'Color',plotcolor{i},'LineWidth',1.5);hold on;
@@ -424,7 +424,7 @@ for i = 1:length(name)
             plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).CCS811_TVOC,'Color',plotcolor{i},'linewidth',1.5);
             hold on;
             
-            if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 dÃ¤r de finns
+            if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
                 subplot(2,5,9);hold on
                 plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},...
                 'linewidth',0.5);
@@ -438,7 +438,7 @@ end
 
 
 name = sort(name);
-for i = 1:length(name)                                                      % Flyttar rÃ¤tt alla namn, sÃ¥ 10 hamnar sist. 
+for i = 1:length(name)                                                      % Flyttar rätt alla namn, så 10 hamnar sist. 
     if name(i) == "UNI10"
         name(end+1) = name(i);
         name(i) = [];
@@ -446,15 +446,15 @@ for i = 1:length(name)                                                      % Fl
 end
 
 toc
-% Ordnar plottgrafik, label fÃ¶r axlar och legender. 
+% Ordnar plottgrafik, label för axlar och legender. 
 tic;
 disp('Setting up labels etc...')
 
 sgtitle(meas_name);  
 formatHMS = 'HH:MM:SS';
 
-% Om vi har fler Ã¤n tvÃ¥ mÃ¤tare kommer denna anvÃ¤ndas, dÃ¥ vi fÃ¥r separata
-% plots fÃ¶r pm2.5 och pm10
+% Om vi har fler än två mätare kommer denna användas, då vi får separata
+% plots för pm2.5 och pm10
 if multiplot == 1   
     %PM2.5
     subplot(2,5,[1, 2])
@@ -465,8 +465,8 @@ if multiplot == 1
     ylabel('Halt [Âµg/m3]');
     xlabel('Tid');
     
-    % Timestamps PM2.5 (Kan vara vÃ¤rt att uppdatera dessa sÃ¥ de ger jÃ¤mna
-    % klockslag istÃ¤llet fÃ¶r 50 minuter isÃ¤r frÃ¥n starttid
+    % Timestamps PM2.5 (Kan vara värt att uppdatera dessa så de ger jämna
+    % klockslag istället för 50 minuter isär från starttid
     ax = gca;
     xtickelick = ax.XTick;
     xtickdiff = median(diff(xtickelick));
@@ -557,8 +557,8 @@ if multiplot == 1
     legend('boxoff');
     grid on;
 
-% Om vi har fÃ¤rre Ã¤n tvÃ¥ mÃ¤tare kommer denna anvÃ¤ndas, dÃ¥ vi fÃ¥r en
-% gemensam plot fÃ¶r pm2.5 och pm10
+% Om vi har färre än två mätare kommer denna användas, då vi får en
+% gemensam plot för pm2.5 och pm10
 elseif multiplot == 0
     if LCAQMP_used > 0
         
@@ -596,7 +596,7 @@ elseif multiplot == 0
         end 
         legend('boxoff');grid on;
         
-        % Subplot fÃ¶r Luftfuktighet
+        % Subplot för Luftfuktighet
         subplot(2,5,3)  
         ylabel('Procent fukt [%]');
         xlabel('Tid [min]');
@@ -649,10 +649,10 @@ end
 toc
 
 
-%% Variationer med avstÃ¥nd
-% GÃ¶rs inte  mÃ¤tningen pÃ¥ olika avstÃ¥nd frÃ¥n vÃ¤g exempelvis bÃ¶r denna vara
-% bortkommenterad. Planerar ni inte att gÃ¶ra likadana mÃ¤tningar fÃ¶r att
-% bedÃ¶ma variationer med avstÃ¥nd kan ni yeeta den hÃ¤r delen.
+%% Variationer med avstånd
+% Görs inte  mätningen på olika avstånd från väg exempelvis bör denna vara
+% bortkommenterad. Planerar ni inte att göra likadana mätningar för att
+% bedöma variationer med avstånd kan ni yeeta den här delen.
 
 % PM10_means = [];
 % PM25_means = [];
@@ -664,8 +664,8 @@ toc
 %     end
 % end
 % 
-% % lÃ¤gg in avstÃ¥nden frÃ¥n "utslÃ¤ppspunkten", och
-% % DISTANCES = [-10, 35, 85, 120]; % GÃ¥rda
+% % lägg in avstånden från "utsläppspunkten", och
+% % DISTANCES = [-10, 35, 85, 120]; % Gårda
 % DISTANCES = [0, 45, 120, 210, 330]; % Botaniska 
 % PM10_pair_means = [mean([PM10_means(1), PM10_means(5)]), mean([PM10_means(3), PM10_means(9)]), mean([PM10_means(4), PM10_means(6)]), mean([PM10_means(2), PM10_means(7)]) mean([PM10_means(10), PM10_means(8)])];
 % PM25_pair_means = [mean([PM25_means(1), PM25_means(5)]), mean([PM25_means(3), PM25_means(9)]), mean([PM25_means(4), PM25_means(6)]), mean([PM25_means(2), PM25_means(7)]) mean([PM25_means(10), PM25_means(8)])];
@@ -675,7 +675,7 @@ toc
 % hold on;
 % plot(DISTANCES, PM25_pair_means, '.', 'MarkerSize', 25)
 % ylabel('Halt [Âµg/m3]');
-% xlabel('AvstÃ¥nd frÃ¥n Dag HammarskjÃ¶ldsleden [m]');
+% xlabel('Avstånd från Dag Hammarskjöldsleden [m]');
 % title('PM2,5');
 % grid on;
 % xlim([min(DISTANCES)-10, max(DISTANCES)+10]);
@@ -686,7 +686,7 @@ toc
 % hold on;
 % plot(DISTANCES, PM10_pair_means, '.', 'MarkerSize', 25)
 % ylabel('Halt [Âµg/m3]');
-% xlabel('AvstÃ¥nd frÃ¥n Dag HammarskjÃ¶ldsleden [m]');
+% xlabel('Avstånd från Dag Hammarskjöldsleden [m]');
 % title('PM10');
 % grid on;
 % xlim([min(DISTANCES)-10, max(DISTANCES)+10]);
