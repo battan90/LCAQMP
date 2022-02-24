@@ -424,14 +424,14 @@ for i = 1:length(name)
             plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).CCS811_TVOC,'Color',plotcolor{i},'linewidth',1.5);
             hold on;
             
-            if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
-                subplot(2,5,9);hold on
-                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},...
-                'linewidth',0.5);
-                subplot(2,5,10);hold on
-                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).O3,'Color',plotcolor{i},...
-                'linewidth',0.5);
-            end
+%             if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
+%                 subplot(2,5,9);hold on
+%                 plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},...
+%                 'linewidth',0.5);
+%                 subplot(2,5,10);hold on
+%                 plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).O3,'Color',plotcolor{i},...
+%                 'linewidth',0.5);
+%             end
         end
     %end
 end
