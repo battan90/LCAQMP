@@ -33,9 +33,8 @@ for i = 1:LCAQMP_used
     opts = detectImportOptions(FileDir);
     opts.VariableNamesLine = 1;
     Data.(name(i)) = readtable(FileDir,opts,'ReadVariableNames', true);    % Sparar till Data.UNITX
-    %Test.(name(i)) = readtable(FileDir,opts,'ReadVariableNames', false);
 end
-fields = fieldnames(Data.(name{5}));
+fields = fieldnames(Data.(name{1}));
 if LCAQMP_used > 10 || LCAQMP_used < 0
     msgbox('Incorrect value for no of LCAQMP');     
     error('Incorrect value for no of LCAQMP');      
@@ -58,38 +57,6 @@ for i = 1:length(name)                                                      % Lo
    Data.(name{i}).(fields{1}) = Data.(name{i}).(fields{1}) / (60*1000);
    Data.(name{i}).(fields{10}) = Data.(name{i}).(fields{10}) + 2000;
 
-%      eval(sprintf('t{%d} = Data.%s.processor_millis/(60*1000)', unitID, unit))          % millis() i minuter 
-%      eval(sprintf('tCO2{%d} = t{%d}', unitID,unitID));               
-%      eval(sprintf('PM25{%d} = Data.%s.Var2', unitID,unit));
-%     eval(sprintf('PM10{%d} = Data.%s.Var3', unitID,unit));
-%     eval(sprintf('T{%d} = Data.%s.Var4', unitID,unit));
-%     eval(sprintf('P{%d} = Data.%s.Var5', unitID,unit));
-%     eval(sprintf('H{%d} = Data.%s.Var6', unitID,unit));
-%     eval(sprintf('CO2{%d} = Data.%s.Var21', unitID,unit));                  % COzir filtered
-%     eval(sprintf('VOC{%d} = Data.%s.Var9', unitID,unit));
-%     eval(sprintf('GPSYear{%d} = Data.%s.Var10 + 2000', unitID,unit));       % + 2000 för att få helt årtal. Kan bli knepigt vid GPS-fel.
-%     eval(sprintf('GPSMonth{%d} = Data.%s.Var11', unitID,unit));
-%     eval(sprintf('GPSDay{%d} = Data.%s.Var12', unitID,unit));
-%     eval(sprintf('GPSHour{%d} = Data.%s.Var13', unitID,unit));              % Timmarna från GPSen är lite wonky ibland, kolla så de stämmer överens i slutändan för säkerhets skull 
-%     eval(sprintf('GPSMin{%d} = Data.%s.Var14', unitID,unit));           
-%     eval(sprintf('GPSSek{%d} = Data.%s.Var15', unitID,unit));
-%     eval(sprintf('GPSsat{%d} = Data.%s.Var18', unitID,unit));
-%     eval(sprintf('GPSfix{%d} = Data.%s.Var19', unitID,unit));
-    
-    % Denna del var tänkt att lösa så det går att köra med filer som både
-    % har skapats med arduinokod anpassad för NO2 och O3 och gammal kod
-    % (som har färre kolumner i csv-filen), tror dock alla plattformar
-    % uppdaterats med arduinokod som löser detta genom att fylla i massa
-    % nollor istället.
-%     if size(eval(sprintf('Data.%s', unit)), 2) == 29        
-%         eval(sprintf('errors{%d} = Data.%s.Var29', unitID,unit));   
-%         eval(sprintf('NO2{%d} = Data.%s.Var26', unitID,unit));
-%         eval(sprintf('O3{%d} = Data.%s.Var27', unitID,unit));
-%     else
-%         eval(sprintf('errors{%d} = Data.%s.Var22', unitID,unit));
-%     end
-%     
-    %clc;
     LCAQMP_units(unitID) = 1;
 end
 
@@ -129,46 +96,10 @@ for i = 1:length(name)
         end
     end
     
-%     if any(GPSfix{unitID}) == 0                                             % Om GPS aldrig har mottagning, ta bort första 10 raderna 
-%                                                                             %(varför då? kanske för att klockan inte är startad de första mätpunkterna eller nåt)
-%         firstGPS_fix(unitID) = length(GPSfix{unitID}) - 10;
-%         str = sprintf('OBS: ingen mottagning för gps på LCAQMP#%i under mätningen',unitID);
-%         msgbox(str);
-%     else
-%         for ii = length(GPSfix{unitID}):-1:1                                % Loopar för att hitta första tillfället då GPS har mottagning
-%                                                                             % if 'GPS' not in errors,  dvs för alla värden som gpsen
-%                                                                             % funkar: (Behöver inte visa position som det verkar, eller rätt tid för den delen?)
-%             if contains(char(errors{unitID}(ii)),'GPS') == 0
-%                 firstGPS_fix(unitID) = length(GPSfix{unitID}) - ii;
-% 
-%             end
-%         end
-%     end
   % ändra GPSfix till att ge vanligt index. Behöver nog inte vara såhär men
   % har inte pallat fixa :)
   firstGPS_fix(unitID) = length(Data.(name{i}).GPS_fix) - firstGPS_fix(unitID);
  
-  % Tar bort alla värden innan GPSfix
-%   t{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   PM25{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   PM10{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   T{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   H{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   CO2{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   VOC{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   P{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   GPSYear{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   GPSMonth{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   GPSDay{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   GPSHour{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   GPSMin{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   GPSSek{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   GPSsat{1,unitID}(1:firstGPS_fix(unitID)) = [];
-
-%   if ~isempty(NO2{1,unitID})
-%       NO2{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%       O3{1,unitID}(1:firstGPS_fix(unitID)) = [];
-%   end
  end
 
 toc
@@ -188,8 +119,6 @@ formatOut = 'yyyy-mm-dd HH:MM:SS';
 
 
 clock_startstop = string;
-%time = zeros(length(Data.(name{1}).GPS_year));
-%timeDN = zeros(length(Data.(name{1}).GPS_year));
 for i = 1:length(name)
     fprintf("... for %s\n", name(i))
     
@@ -209,28 +138,6 @@ for i = 1:length(name)
         clock_startstop(2,i) = time{i}(maxi);
 end
 
-% for ii = 1:length(LCAQMP_units)                                             % Loopar genom de mätarna som används, ex 5 & 9
-%     if LCAQMP_units(ii) == 1
-%         fprintf(" ...for unit %i\n", ii)
-%         for k = 1:length(GPSHour{ii})
-% %             str = sprintf('%i,%i,%i,%i,%i,%i',GPSYear{ii}(k),GPSMonth{ii}(k),GPSDay{ii}(k), GPSHour{ii}(k),GPSMin{ii}(k),GPSSek{ii}(k));
-% %             TimeStamp = datestr(datenum(str,formatIn),formatOut);
-% %             Clock(k,ii) = TimeStamp;
-%         end
-%         time{ii} = datetime(GPSYear{ii},GPSMonth{ii},GPSDay{ii}, GPSHour{ii},GPSMin{ii},GPSSek{ii});
-%         timeDN{ii} = datenum(time{ii});
-%         mini = 0;
-%         for jj = 1:length(GPSHour{ii})                                      % Hittar första tiden utan fel
-%             if ~contains(char(errors{ii}(jj)),'GPS') && mini == 0 && 2001 < GPSYear{ii}(jj) && GPSYear{ii}(jj) < 2079
-%                 mini = jj;
-%             elseif ~contains(char(errors{ii}(jj)),'GPS') && mini ~= 0
-%                 maxi = jj;
-%             end                    
-%         end
-%         clock_startstop(1,ii) = time{ii}(mini);                             % Dessa anger start & slutvärde
-%         clock_startstop(2,ii) = time{ii}(maxi);
-%     end
-% end
 toc
 %%
 % Loopar för att hitta den tidpunkt då samtliga enheter loggar samt den
@@ -239,11 +146,9 @@ tic;
 disp('Finding start and end time...')
 FirstTime = datetime(2000,01,01, 00,00,00);
 minPrev = FirstTime;
-% maxPrev = "2079-12-12 23:59:59";
 FinalTime = datetime(2999, 12, 12, 24, 59, 59);
 maxPrev = FinalTime;
 for i = 1:length(name)
-    %if LCAQMP_units(i) == 1
         minNew = clock_startstop(1,i);
         maxNew = clock_startstop(2,i);
         if minNew > minPrev                                                 %Hittar den största minimivärde på klockorna, alltså den sista som sätts på
@@ -256,7 +161,6 @@ for i = 1:length(name)
             maxPrev = maxNew;
             unitLatest_max = i;
         end
-    %end
 end
 formatIn = 'yyyy-mm-dd HH:MM:SS';
 StartTime = datenum(starttime);%,formatIn);                                 %Dessa verkar vara för att ordna plot
@@ -272,7 +176,6 @@ disp('Syncing up measurement data...')
 
 commonstart = [];commonend = [];
 for i = 1:length(name)
-    %if LCAQMP_units(i) == 1
         % nedan ska ange index för gemensam start- respektive sluttid för
         % alla mätare
         commonstart(i) = find(timeDN{i} >= StartTime & timeDN{i}... 
@@ -289,27 +192,6 @@ for i = 1:length(name)
          DataCommon.(name{i}).(fields{j}) = Data.(name{i}).(fields{j})....
              (commonstart:commonend);
         end
-%          t{1, i} = t{1, i}(commonstart(i):commonend(i)); 
-%         PM25{1,i} = PM25{1, i}(commonstart(i):commonend(i));
-%         PM10{1,i} = PM10{1, i}(commonstart(i):commonend(i));
-%         T{1,i} = T{1, i}(commonstart(i):commonend(i));
-%         H{1,i} = H{1, i}(commonstart(i):commonend(i));
-%         CO2{1,i} = CO2{1, i}(commonstart(i):commonend(i));
-%         tCO2{1, i} = tCO2{1, i}(commonstart(i):commonend(i));               % Verkar vara något med att man tar bort co2värden och den behöver lika lång tidsvektor?
-%         VOC{1, i} = VOC{1, i}(commonstart(i):commonend(i));
-%         P{1, i} = P{1, i}(commonstart(i):commonend(i));
-%         
-%         if ~isempty(NO2{1,i})
-%             NO2{1, i} = NO2{1, i}(commonstart(i):commonend(i));
-%             O3{1, i} = O3{1, i}(commonstart(i):commonend(i));
-%         end
-% 
-%         GPSYear{1, i} = GPSYear{1, i}(commonstart(i):commonend(i));
-%         GPSMonth{1, i} = GPSMonth{1, i}(commonstart(i):commonend(i));
-%         GPSDay{1, i} = GPSDay{1, i}(commonstart(i):commonend(i));
-%         GPSHour{1, i} = GPSHour{1, i}(commonstart(i):commonend(i));
-%         GPSMin{1, i} = GPSMin{1, i}(commonstart(i):commonend(i));
-%         GPSSek{1, i} = GPSSek{1, i}(commonstart(i):commonend(i));
         initial_time = DataCommon.(name{i}).(fields{1})(1);                                          % Tid för det första mätvärdet som kommer med, lägger plotten från noll
         DataCommon.(name{i}).(fields{1}) = DataCommon.(name{i}).(fields{1}) - initial_time;
     %end
@@ -330,29 +212,17 @@ toc
 tic;
 disp('Evaluating CO2 values...')
     
-% for i = 1:length(name)
-%     unit = name(i);
-%     unitID = regexp(unit,'\d*','Match');
-%     unitID = str2double(unitID);        
-% 
-%     initial_time = tCO2{unitID}(1);                                         % tid för det första mätvärdet som kommer med
-%     tCO2{unitID} = tCO2{unitID} - initial_time;
-%     CO2error = 0;
     for i = 1:length(DataCommon.(name{i}).CozIr_Co2_filtered(1))
         if DataCommon.(name{i}).CozIr_Co2_filtered(1) > 5000 %|| CO2{unitID}(ii) < 50
             msgbox('För höga värden för CO2 på LCAQMP#%i',name(i));
             CO2error = 1;
         end
     end
-%     if CO2error == 1
-%         msgbox(str)
-%     end
     for i = 1:length(DataCommon.(name{i}).CozIr_Co2_filtered(1))
     % Tar bort värden som innebär att de troligtvis inte stämmer
     DataCommon.(name{i}).CozIr_Co2_filtered(DataCommon.(name{i}).CozIr_Co2_filtered>=5000) = nan;
     DataCommon.(name{i}).CozIr_Co2_filtered(DataCommon.(name{i}).CozIr_Co2_filtered<1) = nan;
     end
-% end
 
 toc
 %%
@@ -376,34 +246,6 @@ disp('Plotting...')
 moving_mean_amount =899;
 for i = 1:length(name)
 
-    %if LCAQMP_units(i) == 1
-
-        if length(name) <= 2                                                 % Lägger pm2.5 och pm10 i samma fönster
-            multiplot = 0;      
-            subplot(2,5,[1:2,6:7]);hold on      
-            plot(sort(DataCommon.(name{i}).processor_millis),movmean(DataCommon.(name{i}).SDS011_pm25, moving_mean_amount),'-',...
-            'Color',plotcolor{i},'LineWidth',1.5);                          % ändra dessa till i???
-            plot(sort(DataCommon.(name{i}).processor_millis),movmean(DataCommon.(name{i}).SDS011_pm10, moving_mean_amount),':',...
-            'Color',plotcolor{i},'LineWidth',1.5);
-            subplot(2,5,3);hold on
-            plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).BME680_humidity,'-','Color',plotcolor{i},'linewidth',1.5);
-            subplot(2,5,4);hold on
-            plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).BME680_temperature,'-','Color',plotcolor{i},'linewidth',1.5);
-            subplot(2,5,5);hold on
-            plot(sort(DataCommon.(name{i}).processor_millis),movmean(DataCommon.(name{i}).CozIr_Co2_filtered, moving_mean_amount,'omitnan'),'Color',...
-            plotcolor{i},'linewidth',1.5);
-            subplot(2,5,8);hold on
-            plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).CCS811_TVOC,'Color',plotcolor{i},'linewidth',1.5);
-            
-            if ~isempty(DataCommon.(name{i}).NO2)
-                subplot(2,5,9);hold on
-                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},'linewidth',1.5);
-                subplot(2,5,10);hold on
-
-                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).O3,'Color',plotcolor{i},'Marker','.',...
-                'LineStyle', 'none');
-            end
-        else
             multiplot = 1;                                                  % Lägger pm2.5 och pm10 i olika fönster
             subplot(2,5,[1,2])
             plot(sort(DataCommon.(name{i}).processor_millis),movmean(DataCommon.(name{i}).SDS011_pm25, moving_mean_amount),...
@@ -424,15 +266,14 @@ for i = 1:length(name)
             plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).CCS811_TVOC,'Color',plotcolor{i},'linewidth',1.5);
             hold on;
             
-            if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
-                subplot(2,5,9);hold on
-                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},...
-                'linewidth',0.5);
-                subplot(2,5,10);hold on
-                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).O3,'Color',plotcolor{i},...
-                'linewidth',0.5);
-            end
-        end
+%             if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
+%                 subplot(2,5,9);hold on
+%                 plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},...
+%                 'linewidth',0.5);
+%                 subplot(2,5,10);hold on
+%                 plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).O3,'Color',plotcolor{i},...
+%                 'linewidth',0.5);
+%             end
     %end
 end
 
@@ -454,8 +295,7 @@ sgtitle(meas_name);
 formatHMS = 'HH:MM:SS';
 
 % Om vi har fler än två mätare kommer denna användas, då vi får separata
-% plots för pm2.5 och pm10
-if multiplot == 1   
+% plots för pm2.5 och pm10 
     %PM2.5
     subplot(2,5,[1, 2])
     title('PM2.5');
@@ -559,93 +399,6 @@ if multiplot == 1
 
 % Om vi har färre än två mätare kommer denna användas, då vi får en
 % gemensam plot för pm2.5 och pm10
-elseif multiplot == 0
-    if LCAQMP_used > 0
-        
-        subplot(2,5,[1:2,6:7])  % PM
-        ylabel('Halt [Âµg/m3]');
-        xlabel('Tid');
-        title('Partikelhalter');
-        
-        % Timestamps
-        ax = gca;  
-        xtickelick = ax.XTick;
-        xtickdiff = median(diff(xtickelick));
-        TimeVector = (StartTime:OneMin*xtickdiff:EndTime);
-        xData = datestr(TimeVector,formatHMS);
-        xtickelick(end) = [];
-        end_time_of_day = datestr(EndTime, formatHMS);
-        if length(xData(:,1)) ~= numel(xtickelick)
-            xData(end+1,:) = char(end_time_of_day);
-        end
-        set(gca,'XTick',xtickelick);
-        set(gca,'XTickLabel',{xData});
-        set(gca,'XTickLabelRotation',30);
-        
-        if LCAQMP_used == 1     
-            str = sprintf('%s', name(1));
-            lgdPM = legend({'PM2.5','PM10',},'Location','best',...
-            'NumColumns',1);
-            title(lgdPM,str);
-        elseif LCAQMP_used == 2
-            str = sprintf('%s        %s', name(1),name(2));
-            lgdPM = legend({'PM2.5','PM10','PM2.5','PM10'},...
-            'Location','best','NumColumns',2);
-            title(lgdPM,str);
-
-        end 
-        legend('boxoff');grid on;
-        
-        % Subplot för Luftfuktighet
-        subplot(2,5,3)  
-        ylabel('Procent fukt [%]');
-        xlabel('Tid [min]');
-        title('Relativ luftfuktighet');
-        legend(name,'Location','best','FontSize',8);
-        legend('boxoff');grid on;
-        
-        % Subplot Temperatur:
-        subplot(2,5,4)  
-        xlabel('Tid [min]')
-        ylabel([char(176) 'C']);
-        title('Temperatur');
-        legend(name,'Location','best','FontSize',8);
-        legend('boxoff');grid on;
-        
-        % Subplot CO2:
-        subplot(2,5,5)  
-        xlabel('Tid [min]')
-        ylabel('PPM')
-        title('CO2')
-        legend(name,'Location','best','FontSize',8);
-        legend('boxoff');grid on;
-        
-        % Subplot VOC
-        subplot(2,5,8)  
-        xlabel('Tid [min]')
-        ylabel('PPB')
-        title('VOC')
-        legend(name,'Location','best','FontSize',8);
-        legend('boxoff');grid on;
-        
-        % Subplot NO2
-        subplot(2,5,9)  
-        xlabel('Tid [min]')
-        ylabel('PPB')
-        title('NO2')
-        legend(name,'Location','best','FontSize',8);
-        legend('boxoff');grid on;
-        
-        % Subplot O3
-        subplot(2,5,10)
-        xlabel('Tid [min]')
-        ylabel('PPB')
-        title('O3')
-        legend(name,'Location','best','FontSize',8);
-        legend('boxoff');grid on;
-
-    end
-end
 toc
 
 
