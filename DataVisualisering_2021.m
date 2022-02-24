@@ -339,7 +339,7 @@ disp('Evaluating CO2 values...')
 %     tCO2{unitID} = tCO2{unitID} - initial_time;
 %     CO2error = 0;
     for i = 1:length(DataCommon.(name{i}).CozIr_Co2_filtered(1))
-        if Data.(name{i}).CozIr_Co2_filtered(1) > 5000 %|| CO2{unitID}(ii) < 50
+        if DataCommon.(name{i}).CozIr_Co2_filtered(1) > 5000 %|| CO2{unitID}(ii) < 50
             msgbox('För höga värden för CO2 på LCAQMP#%i',name(i));
             CO2error = 1;
         end
@@ -424,14 +424,14 @@ for i = 1:length(name)
             plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).CCS811_TVOC,'Color',plotcolor{i},'linewidth',1.5);
             hold on;
             
-%             if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
-%                 subplot(2,5,9);hold on
-%                 plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},...
-%                 'linewidth',0.5);
-%                 subplot(2,5,10);hold on
-%                 plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).O3,'Color',plotcolor{i},...
-%                 'linewidth',0.5);
-%             end
+            if ~isempty(DataCommon.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
+                subplot(2,5,9);hold on
+                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).NO2,'Color',plotcolor{i},...
+                'linewidth',0.5);
+                subplot(2,5,10);hold on
+                plot(sort(DataCommon.(name{i}).processor_millis),DataCommon.(name{i}).O3,'Color',plotcolor{i},...
+                'linewidth',0.5);
+            end
         end
     %end
 end
