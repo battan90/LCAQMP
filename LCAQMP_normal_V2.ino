@@ -1,4 +1,4 @@
-// Följande paket behöver finnas tillgängliga för att koden ska gå att köra
+// Följande paket behöver finnas tillgängliga för att koden ska gå att köra:
 #include <Arduino.h>   // required before wiring_private.h
 #include "wiring_private.h"
 #include <SDS011_Uart.h>
