@@ -1,88 +1,100 @@
-function [] = Plot(Data, meas_name, clock_startstop, tidsfel) %
+function [] = ploting(data, measName, clockStartStop, tidsFel) %
 %PLOT Summary of this function goes here
 %   Detailed explanation goes here
 
-tic;
+
 disp('Creating plots...')
 
 plotcolor = {'#A2142F', '#0000FF', '#00FF00', '#FF0000', '#00FFFF',...
     '#FF00FF', '#D95319', '#EDB120', '#7E2F8E', '#FFFF00'};
 figure('units','normalized','outerposition',[0 0 1 1]);
-name = fieldnames(Data);
-%FelData = cell([1, sum(tidsfel)]);
+name = fieldnames(data);
 k = 1;
-for i = 1 : length(fieldnames(Data))
-    if tidsfel(i) && sum(tidsfel) < length(name)
-%FelData{k} =Data{i};
-Data = rmfield(Data, name{i});
+for i = 1 : length(fieldnames(data))
+    if tidsFel(i) && sum(tidsFel) < length(name)
+data = rmfield(data, name{i});
 k = k + 1;
     end
 end
-
-
-name = fieldnames(Data);
+name = fieldnames(data);
 OneMin = 1/60/24;
 NO2unit = cell([1,length(name)]);
 %% Lägger till datum för mätningen i titel
-tic
-if ~isempty(clock_startstop)
-starttime = datetime(max(datenum(clock_startstop(1,:))), 'ConvertFrom', 'datenum');
-endtime = datetime(min(datenum(clock_startstop(2,:))), 'ConvertFrom', 'datenum');
 
+if ~isempty(clockStartStop)
+startTime = datetime(max(datenum(clockStartStop(1,:))), ...
+            'ConvertFrom', 'datenum');
+        endTime = datetime(min(datenum(clockStartStop(2,:))), ...
+          'ConvertFrom', 'datenum');
 
-
-if datestr(starttime, ' yy-mm-dd') == datestr(endtime, ' yy-mm-dd')
-    meas_name = strcat(meas_name, datestr(starttime, ' yy-mm-dd'));
-elseif any(starttime_date ~= endtime_date)
-    meas_name = strcat(meas_name, starttime_date, ' to ', datestr(endtime, ' yy-mm-dd'));
+if datestr(startTime, ' yy-mm-dd') == datestr(endTime, ' yy-mm-dd')
+    measName = strcat(measName, datestr(startTime, ' yy-mm-dd'));
+elseif any(startTime ~= endTime)
+    measName = strcat(measName, datestr(startTime, ' yy-mm-dd'), ...
+                ' to ', datestr(endTime, ' yy-mm-dd'));
 end
 
 else
     
-    starttime = 0;
-    [M, I] = max(structfun(@height,Data));
-    endtime = Data.(name{I}).processor_millis(M);
+    startTime = 0;
+    [M, I] = max(structfun(@height,data));
+    endTime = data.(name{I}).processor_millis(M);
     
 end
 
 % Skapar plottar för olika fall av indata
-% Plottar ut LCAQMP, ifall den är med i mätningen
-% Två fall; för 1-2 LCAQMP plottas både PM2.5 och Pm10 i samma graf
-% annars vid LCAQMP>2 så plottas PM2.5 och PM10 i enskilda fönster
-tic;
-disp('Plotting...')
 
+disp('Plotting...')
 % Glidande medelvärde för att undvika brus
-moving_mean_amount =51;
+M = max(structfun(@length,data.(name{1})));
+moveMeanConstant = 0.15;
+if ~mod(M*moveMeanConstant, 2)
+movingMeanAmount = (M * moveMeanConstant) + 1;
+else
+movingMeanAmount = M * moveMeanConstant;
+end
+
 
 for i = 1:length(name)
-    
     subplot(2,5,[1,2])
-    plot(sort(Data.(name{i}).processor_millis),movmean(Data.(name{i}).SDS011_pm25, moving_mean_amount),...
+    plot(data.(name{i}).processor_millis, ...
+         movmean(data.(name{i}).SDS011_pm25, movingMeanAmount),...
         'Color',plotcolor{i},'LineWidth',1.5);hold on;
     subplot(2,5,[6,7])
-    plot(sort(Data.(name{i}).processor_millis),movmean(Data.(name{i}).SDS011_pm10, moving_mean_amount),...
-        'Color',plotcolor{i},'LineWidth',1.5);hold on;
+    plot(data.(name{i}).processor_millis, movmean(data.(name{i}).SDS011_pm10, ...
+         movingMeanAmount),...
+         'Color',plotcolor{i},'LineWidth',1.5);hold on;
     subplot(2,5,3)
-    plot(sort(Data.(name{i}).processor_millis),Data.(name{i}).BME680_humidity,'Color',plotcolor{i},'linewidth',1.5);
+    plot(data.(name{i}).processor_millis, ...
+         movmean(data.(name{i}).BME680_humidity, movingMeanAmount), ...
+         'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     subplot(2,5,4)
-    plot(sort(Data.(name{i}).processor_millis),Data.(name{i}).BME680_temperature,'Color',plotcolor{i},'linewidth',1.5);
+    plot(data.(name{i}).processor_millis, ...
+         movmean(data.(name{i}).BME680_temperature, movingMeanAmount), ...
+         'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     subplot(2,5,5)
-    plot(sort(Data.(name{i}).processor_millis),movmean(Data.(name{i}).CozIr_Co2_filtered, moving_mean_amount,'omitnan'),'Color',plotcolor{i},'linewidth',1.5);
+    plot(data.(name{i}).processor_millis, ...
+         movmean(data.(name{i}).CozIr_Co2_filtered, movingMeanAmount, ...
+         'omitnan'),'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     subplot(2,5,8)
-    plot(sort(Data.(name{i}).processor_millis),Data.(name{i}).CCS811_TVOC,'Color',plotcolor{i},'linewidth',1.5);
+    plot(data.(name{i}).processor_millis, ...
+         movmean(data.(name{i}).CCS811_TVOC, movingMeanAmount), ...
+         'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     
-    if max(contains(fieldnames(Data.(name{i})),'NO2'))%~isempty(Data.(name{i}).NO2)                                           % Plottar NO2 och O3 där de finns
+    % Plottar NO2 och O3 där de finns
+    if max(contains(fieldnames(data.(name{i})),'NO2')) 
         subplot(2,5,9);hold on
-        plot(sort(Data.(name{i}).processor_millis),movmean(Data.(name{i}).NO2, moving_mean_amount, 'omitnan'),'Color',plotcolor{i},...
-            'linewidth',0.5);
+        plot(data.(name{i}).processor_millis,movmean(data.(name{i}).NO2, ...
+             movingMeanAmount, 'omitnan'),'Color',plotcolor{i}, ...
+             'linewidth',0.5);
         subplot(2,5,10);hold on
-        plot(sort(Data.(name{i}).processor_millis),movmean(Data.(name{i}).O3, moving_mean_amount, 'omitnan'),'Color',plotcolor{i},...
-            'linewidth',0.5);
+        plot(data.(name{i}).processor_millis,movmean(data.(name{i}).O3, ...
+             movingMeanAmount, 'omitnan'),'Color',plotcolor{i},...
+             'linewidth',0.5);
         
         NO2unit{i} = name{i};
     else
@@ -90,37 +102,31 @@ for i = 1:length(name)
     end
 end
 
-%NO2unit = NO2unit >0;
+%name = sort(name);
+%k = zeros([1, length(name)]);
+% for i = 1:length(name)  % Flyttar rätt alla namn, så 10 hamnar sist.
+%     if strfind(name{i},'UNI10')
+%     k(i) = strfind(name{i},'UNI10');
+%     end
+% end
 
-name = sort(name);
-k = zeros([1, length(name)]);
-for i = 1:length(name)  % Flyttar rätt alla namn, så 10 hamnar sist.
-    if strfind(name{i},'UNI10')
-    k(i) = strfind(name{i},'UNI10');
-    end
-end
+% if max(k)
+%     name(max(k)) = [];
+%     NO2unit(max(k)) = [];
+%     
+%   name{length(name)+1} = 'UNIT10';
+%   NO2unit{length(NO2unit)+1} = 'UNIT10';
+% end
 
-if max(k)
-    name(max(k)) = [];
-    NO2unit(max(k)) = [];
-    
-  name{length(name)+1} = 'UNIT10';
-  NO2unit{length(NO2unit)+1} = 'UNIT10';
-end
-
-%NO2unit = setdiff(NO2unit, []);
 NO2unit(strcmp('',NO2unit)) = [];
 
-toc
-% Ordnar plottgrafik, label för axlar och legender.
-tic;
-disp('Setting up labels etc...')
 
-sgtitle(meas_name);
+% Ordnar plottgrafik, label för axlar och legender.
+
+disp('Setting up labels etc...')
+sgtitle(measName);
 formatHMS = 'HH:MM:SS';
 
-% Om vi har fler än två mätare kommer denna användas, då vi får separata
-% plots för pm2.5 och pm10
 %PM2.5
 subplot(2,5,[1, 2])
 title('PM2.5');
@@ -133,16 +139,16 @@ xlabel('Tid');
 % Timestamps PM2.5 (Kan vara värt att uppdatera dessa så de ger jämna
 % klockslag istället för 50 minuter isär från starttid
 ax = gca;
-xtickelick = ax.XTick;
-xtickdiff = median(diff(xtickelick));
-TimeVector= (starttime:OneMin*xtickdiff:endtime);
+xkelick = ax.XTick;
+xkdiff = median(diff(xkelick));
+TimeVector= (startTime:OneMin*xkdiff:endTime);
 xData = datestr(TimeVector,formatHMS);
-xtickelick(end) = [];
-end_time_of_day = datestr(endtime, formatHMS);
-if length(xData(:,1)) ~= numel(xtickelick)
+xkelick(end) = [];
+end_time_of_day = datestr(endTime, formatHMS);
+if length(xData(:,1)) ~= numel(xkelick)
     xData(end+1,:) = char(end_time_of_day);
 end
-set(gca,'XTick',xtickelick);
+set(gca,'XTick',xkelick);
 set(gca,'XTickLabel',{xData});
 set(gca,'XTickLabelRotation',30)
 
@@ -157,16 +163,16 @@ xlabel('Tid');
 
 % Timestamps pm10
 ax = gca;
-xtickelick = ax.XTick;
-xtickdiff = median(diff(xtickelick));
-TimeVector= (starttime:OneMin*xtickdiff:endtime);
+xkelick = ax.XTick;
+xkdiff = median(diff(xkelick));
+TimeVector= (startTime:OneMin*xkdiff:endTime);
 xData = datestr(TimeVector,formatHMS);
-xtickelick(end) = [];
-end_time_of_day = datestr(endtime, formatHMS);
-if length(xData(:,1)) ~= numel(xtickelick)
+xkelick(end) = [];
+end_time_of_day = datestr(endTime, formatHMS);
+if length(xData(:,1)) ~= numel(xkelick)
     xData(end+1,:) = char(end_time_of_day);
 end
-set(gca,'XTick',xtickelick);
+set(gca,'XTick',xkelick);
 set(gca,'XTickLabel',{xData});
 set(gca,'XTickLabelRotation',30)
 
@@ -222,15 +228,23 @@ legend(NO2unit,'Location','best','FontSize',8);
 legend('boxoff');
 grid on;
 
-% Om vi har färre än två mätare kommer denna användas, då vi får en
-% gemensam plot för pm2.5 och pm10
-toc
+
 
 
 %% Variationer med avstånd
 % Görs inte  mätningen på olika avstånd från väg exempelvis bör denna vara
 % bortkommenterad. Planerar ni inte att göra likadana mätningar för att
 % bedöma variationer med avstånd kan ni yeeta den här delen.
+
+% longitude = zeros([1, length(fieldnames(data))]);
+% latitude = zeros([1, length(fieldnames(data))]);
+% for i = 1: length(name)
+%     longitude(i) = data.(name{i}).GPS_longitude(1);
+%     latitude(i) = data.(name{i}).GPS_latitude(1);
+% end
+% for i = 2:length(name)-1
+%     disp(stdist([longitude(i-1), longitude(i)], [latitude(i-1), latitude(i)]));
+% end
 
 % PM10_means = [];
 % PM25_means = [];
@@ -271,4 +285,3 @@ toc
 % ylim([0, yMax])
 
 end
-
