@@ -30,10 +30,8 @@ name = string;
     'Select .CSV file from LCAQMP to evaluate','MultiSelect', ...
     'on');
 %Användt vid utveckling för att inte behöva välja filer
-%path = 'C:\Users\sebas\Downloads\Data Referens i tält\';
-%fileID = cellstr({'UNIT2_07.CSV', 'UNIT3_03.CSV', 'UNIT4_03.CSV', ...
-%         'UNIT5_14.CSV', 'UNIT6_27.CSV', 'UNIT7_17.CSV', 'UNIT8_02.CSV', ...
-%         'UNIT9_04.CSV'});
+% fileID = {'UNI10.CSV','UNIT1.CSV','UNIT2.CSV','UNIT3.CSV','UNIT4.CSV','UNIT5.CSV','UNIT6.CSV','UNIT7.CSV','UNIT8.CSV','UNIT9.CSV'};
+% path = 'C:\Users\sebas\Downloads\Fältmätningar\Fältmätningar\Botaniska 13-15 apr\';
 fileID = cellstr(fileID);
 timeDN = {length(fileID)};
 for i = 1:length(fileID)
@@ -60,6 +58,10 @@ for i = 1:length(fileID)
         data.(name{i}).GPS_hour, data.(name{i}).GPS_minute, ...
         data.(name{i}).GPS_seconds));
 end
-
-
+if max(contains(fieldnames(data), 'UNI10'))
+    data.UNIT10 = data.UNI10;
+    data = rmfield(data, 'UNI10');
+    timeDN{length(timeDN)+1} = timeDN{1};
+    timeDN(1) = [];
+end
 end
