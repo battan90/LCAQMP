@@ -1,4 +1,4 @@
-function [] = ploting(data, measName, clockStartStop, tidsFel) %
+function [] = ploting(data, measName, clockStartStop) %
 %PLOT Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,31 +9,23 @@ plotcolor = {'#A2142F', '#0000FF', '#00FF00', '#FF0000', '#00FFFF',...
     '#FF00FF', '#D95319', '#EDB120', '#7E2F8E', '#FFFF00'};
 figure('units','normalized','outerposition',[0 0 1 1]);
 name = fieldnames(data);
-k = 1;
-for i = 1 : length(fieldnames(data))
-    if tidsFel(i) && sum(tidsFel) < length(name)
-data = rmfield(data, name{i});
-k = k + 1;
-    end
-end
-name = fieldnames(data);
 OneMin = 1/60/24;
 NO2unit = cell([1,length(name)]);
 %% Lägger till datum för mätningen i titel
 
 if ~isempty(clockStartStop)
-startTime = datetime(max(datenum(clockStartStop(1,:))), ...
-            'ConvertFrom', 'datenum');
-        endTime = datetime(min(datenum(clockStartStop(2,:))), ...
-          'ConvertFrom', 'datenum');
-
-if datestr(startTime, ' yy-mm-dd') == datestr(endTime, ' yy-mm-dd')
-    measName = strcat(measName, datestr(startTime, ' yy-mm-dd'));
-elseif any(startTime ~= endTime)
-    measName = strcat(measName, datestr(startTime, ' yy-mm-dd'), ...
-                ' to ', datestr(endTime, ' yy-mm-dd'));
-end
-
+    startTime = datetime(max(datenum(clockStartStop(1,:))), ...
+        'ConvertFrom', 'datenum');
+    endTime = datetime(min(datenum(clockStartStop(2,:))), ...
+        'ConvertFrom', 'datenum');
+    
+    if datestr(startTime, ' yy-mm-dd') == datestr(endTime, ' yy-mm-dd')
+        measName = strcat(measName, datestr(startTime, ' yy-mm-dd'));
+    elseif any(startTime ~= endTime)
+        measName = strcat(measName, datestr(startTime, ' yy-mm-dd'), ...
+            ' to ', datestr(endTime, ' yy-mm-dd'));
+    end
+    
 else
     
     startTime = 0;
@@ -46,59 +38,63 @@ end
 
 disp('Plotting...')
 % Glidande medelvärde för att undvika brus
-M = max(structfun(@length,data.(name{1})));
-moveMeanConstant = 0.15;
-if ~mod(M*moveMeanConstant, 2)
-movingMeanAmount = (M * moveMeanConstant) + 1;
+if isstruct(data.(name{1}))
+    M = max(structfun(@length,data.(name{1})));
+    moveMeanConstant = 0.15;
 else
-movingMeanAmount = M * moveMeanConstant;
+    moveMeanConstant = 0.15;
+end
+if ~mod(M*moveMeanConstant, 2)
+    movingMeanAmount = (M * moveMeanConstant) + 1;
+else
+    movingMeanAmount = M * moveMeanConstant;
 end
 
 
 for i = 1:length(name)
     subplot(2,5,[1,2])
     plot(data.(name{i}).processor_millis, ...
-         movmean(data.(name{i}).SDS011_pm25, movingMeanAmount),...
+        movmean(data.(name{i}).SDS011_pm25, movingMeanAmount),...
         'Color',plotcolor{i},'LineWidth',1.5);hold on;
     subplot(2,5,[6,7])
     plot(data.(name{i}).processor_millis, movmean(data.(name{i}).SDS011_pm10, ...
-         movingMeanAmount),...
-         'Color',plotcolor{i},'LineWidth',1.5);hold on;
+        movingMeanAmount),...
+        'Color',plotcolor{i},'LineWidth',1.5);hold on;
     subplot(2,5,3)
     plot(data.(name{i}).processor_millis, ...
-         movmean(data.(name{i}).BME680_humidity, movingMeanAmount), ...
-         'Color',plotcolor{i},'linewidth',1.5);
+        movmean(data.(name{i}).BME680_humidity, movingMeanAmount), ...
+        'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     subplot(2,5,4)
     plot(data.(name{i}).processor_millis, ...
-         movmean(data.(name{i}).BME680_temperature, movingMeanAmount), ...
-         'Color',plotcolor{i},'linewidth',1.5);
+        movmean(data.(name{i}).BME680_temperature, movingMeanAmount), ...
+        'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     subplot(2,5,5)
     plot(data.(name{i}).processor_millis, ...
-         movmean(data.(name{i}).CozIr_Co2_filtered, movingMeanAmount, ...
-         'omitnan'),'Color',plotcolor{i},'linewidth',1.5);
+        movmean(data.(name{i}).CozIr_Co2_filtered, movingMeanAmount, ...
+        'omitnan'),'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     subplot(2,5,8)
     plot(data.(name{i}).processor_millis, ...
-         movmean(data.(name{i}).CCS811_TVOC, movingMeanAmount), ...
-         'Color',plotcolor{i},'linewidth',1.5);
+        movmean(data.(name{i}).CCS811_TVOC, movingMeanAmount), ...
+        'Color',plotcolor{i},'linewidth',1.5);
     hold on;
     
     % Plottar NO2 och O3 där de finns
-    if max(contains(fieldnames(data.(name{i})),'NO2')) 
+    if max(contains(fieldnames(data.(name{i})),'NO2'))
         subplot(2,5,9);hold on
         plot(data.(name{i}).processor_millis,movmean(data.(name{i}).NO2, ...
-             movingMeanAmount, 'omitnan'),'Color',plotcolor{i}, ...
-             'linewidth',0.5);
+            movingMeanAmount, 'omitnan'),'Color',plotcolor{i}, ...
+            'linewidth',0.5);
         subplot(2,5,10);hold on
         plot(data.(name{i}).processor_millis,movmean(data.(name{i}).O3, ...
-             movingMeanAmount, 'omitnan'),'Color',plotcolor{i},...
-             'linewidth',0.5);
+            movingMeanAmount, 'omitnan'),'Color',plotcolor{i},...
+            'linewidth',0.5);
         
         NO2unit{i} = name{i};
     else
-    NO2unit{i} = '';
+        NO2unit{i} = '';
     end
 end
 
@@ -113,7 +109,7 @@ end
 % if max(k)
 %     name(max(k)) = [];
 %     NO2unit(max(k)) = [];
-%     
+%
 %   name{length(name)+1} = 'UNIT10';
 %   NO2unit{length(NO2unit)+1} = 'UNIT10';
 % end

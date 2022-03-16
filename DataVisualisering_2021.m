@@ -12,32 +12,37 @@ clear;
 close all;
 clc;
 format long
+tic
 counter = 1;
-measName = 'Nordstan och änggårdsbergen, ';
+% measName = 'Botaniska, ';
 %% Namn på mätningen
-%input = inputdlg("Namn på mätning", "Namn på mätning");
-% if input == ""
-%     meas_name = 'Mätning, '; 
-% else
-%     meas_name = input;
-% end
+input = inputdlg("Namn på mätning", "Namn på mätning");
+if input == ""
+    measName = 'Mätning, ';
+else
+    measName = input;
+end
 %% Öppna fönster för att välja .csv data
 
-% while counter
-%     try
-%         [Data, timeDN] = Selection();
-%         counter = 0;
-%     catch
-%         A = questdlg('Ingen fil vald', 'Ingen fil vald','Starta om', ...
-%             'Avbryt', 'Avbryt');
-%         switch A
-%             case 'Avbryt'
-%                 return
-%         end
-%     end
-% end
-[data, timeDN] = selection();
+while counter
+    try
+        [data, timeDN] = selection();
+        counter = 0;
+    catch
+        A = questdlg('Ingen fil vald', 'Ingen fil vald','Starta om', ...
+            'Avbryt', 'Avbryt');
+        switch A
+            case 'Avbryt'
+                return
+        end
+    end
+end
+% [data, timeDN] = selection();
 
-[data, tidsFel, clockStartStop] = datafix (data, timeDN);
+[data, felData, clockStartStop] = datafix (data, timeDN);
 
-ploting(data, measName, clockStartStop, tidsFel); 
+ploting(data, measName, clockStartStop);
+
+ploting(felData, measName, [])
+
+toc

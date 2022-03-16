@@ -1,4 +1,4 @@
-function [dataCommon, tidsFel, clockStartStop] = datafix(data, timeDN)
+function [dataCommon, felData, clockStartStop] = datafix(data, timeDN)
 %{
     Datafix   -   Justerar mätdatan inför plot
     Skapar en gemensam tidslinje för samtlig mätdata med t0 efter den
@@ -16,9 +16,8 @@ Inputs:
 Outputs:
     dataCommon          -   Struct med all mätdata justerad så det är för
                             samma tidsfönster
-    tidsFel             -   Logisk vektor för vilka enheter som på något
-                            sätt haft problem med sin tidsättning
-    clockStartStop     -    Matris med första och sista tid för varje enhet
+    felData             -   Struct med data som innehåller tidsfel
+    clockStartStop      -   Matris med första och sista tid för varje enhet
 
 Exempel:
 
@@ -42,13 +41,13 @@ for i = 1:length(name)
     fprintf("... for %s\n", name{i})
     % Säkerställer så att datan in har en fullständigt tidsfel.
     if data.(name{i}).GPS_year(1) >= years(1) &&...
-       data.(name{i}).GPS_year(end) <= years(2)
+            data.(name{i}).GPS_year(end) <= years(2)
         % Hittar första tiden utan fel.
         for j = 1:length(timeDN{i})
             
             if ~contains(char(data.(name{i}).(width(data.(name{i}))){j}),'GPS') &&...
-               years(1) < data.(name{i}).GPS_year(j) &&...
-               data.(name{i}).GPS_year(j) <= years(2)
+                    years(1) < data.(name{i}).GPS_year(j) &&...
+                    data.(name{i}).GPS_year(j) <= years(2)
                 mini = j;
                 break
             end
@@ -63,9 +62,9 @@ for i = 1:length(name)
         end
         % Dessa anger start & slutvärde.
         clockStartStop(1,i) = datetime(timeDN{i}(mini),...
-                              'ConvertFrom', 'datenum');
+            'ConvertFrom', 'datenum');
         clockStartStop(2,i) = datetime(timeDN{i}(maxi),...
-                              'ConvertFrom', 'datenum');
+            'ConvertFrom', 'datenum');
     else
         tidsFel(i) = 1;
         clockStartStop(1,i) = 0;
@@ -82,9 +81,9 @@ if sum(tidsFel) ~= length(name)
     
     disp('Finding start and end time...')
     startTime = datetime(max(datenum(clockStartStop(1,:))), ...
-                'ConvertFrom', 'datenum');
+        'ConvertFrom', 'datenum');
     endTime = datetime(min(datenum(clockStartStop(2,:))), ...
-              'ConvertFrom', 'datenum');
+        'ConvertFrom', 'datenum');
     
     
     
@@ -94,15 +93,19 @@ if sum(tidsFel) ~= length(name)
     
     commonStart = zeros(1:length(name)-length(tidsFel));
     commonEnd = zeros(1:length(name)-length(tidsFel));
+    
+    felData = data;
     for i = 1:length(name)
         if tidsFel(i)
+            data = rmfield(data, name{i});
             continue
         end
+        felData = rmfield(felData, name{i});
         % nedan ska ange index för gemensam start- respektive sluttid för
         % alla mätare
         commonStart(i) = find(timeDN{i} >= datenum(startTime) &...
-                         timeDN{i} < now,1);                      
-        commonEnd(i) = find(timeDN{i} <= datenum(endTime), 1, 'last');               
+            timeDN{i} < now,1);
+        commonEnd(i) = find(timeDN{i} <= datenum(endTime), 1, 'last');
         
         % ändrar vektorerna till att endast omfatta det gemensamma
         % tidsspannet
@@ -113,14 +116,15 @@ if sum(tidsFel) ~= length(name)
         end
         % Tid för det första mätvärdet som kommer med, lägger plotten från noll
         dataCommon.(name{i}).processor_millis = ...
-        dataCommon.(name{i}).processor_millis - ...
-        dataCommon.(name{i}).processor_millis(1); 
+            dataCommon.(name{i}).processor_millis - ...
+            dataCommon.(name{i}).processor_millis(1);
     end
     
     %% Utvärderar CO2 sensorn, plockar ut felvärden
     % CO2 sensorn har möjlighet att mäta mellan 0-5000.
     
     disp('Evaluating CO2 values...')
+    name = fieldnames(data);
     for i = 1:length(name)
         if data.(name{i}).CozIr_Co2_filtered(1) > 5000 %|| CO2{unitID}(ii) < 50
             msgbox('För höga värden för CO2 på %s',name{i});
@@ -128,9 +132,9 @@ if sum(tidsFel) ~= length(name)
         % Tar bort värden som innebär att de troligtvis inte stämmer
         if contains(data.(name{i}).Var29,'CozIR')
             data.(name{i}).CozIr_Co2(contains(data.(name{i}).(width(data.(name{i}))), ...
-            'CozIR')) = NaN();
+                'CozIR')) = NaN();
             data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}).(width(data.(name{i}))), ...
-            'CozIR')) = NaN();
+                'CozIR')) = NaN();
         end
     end
     
@@ -146,9 +150,9 @@ else
         % Tar bort värden som innebär att de troligtvis inte stämmer
         if contains(data.(name{i}).Var29,'CozIR')
             data.(name{i}).CozIr_Co2(contains(data.(name{i}). ...
-            Var29,'CozIR')) = NaN();
+                Var29,'CozIR')) = NaN();
             data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}). ...
-            Var29,'CozIR')) = NaN();
+                Var29,'CozIR')) = NaN();
         end
     end
     
