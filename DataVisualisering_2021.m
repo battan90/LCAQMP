@@ -14,35 +14,49 @@ clc;
 format long
 tic
 counter = 1;
-% measName = 'Botaniska, ';
+measName = 'Botaniska, ';
+
 %% Namn på mätningen
-input = inputdlg("Namn på mätning", "Namn på mätning");
-if input == ""
-    measName = 'Mätning, ';
-else
-    measName = input;
-end
+% input = inputdlg("Namn på mätning", "Namn på mätning");
+% if input == ""
+%     measName = 'Mätning, ';
+% else
+%     measName = input;
+% end
 %% Öppna fönster för att välja .csv data
 
-while counter
-    try
-        [data, timeDN] = selection();
-        counter = 0;
-    catch
-        A = questdlg('Ingen fil vald', 'Ingen fil vald','Starta om', ...
-            'Avbryt', 'Avbryt');
-        switch A
-            case 'Avbryt'
-                return
-        end
-    end
-end
-% [data, timeDN] = selection();
+% while counter
+%     try
+%         [data, timeDN] = selection();
+%         counter = 0;
+%     catch
+%         A = questdlg('Ingen fil vald', 'Ingen fil vald','Starta om', ...
+%             'Avbryt', 'Avbryt');
+%         switch A
+%             case 'Avbryt'
+%                 return
+%         end
+%     end
+% end
+[data, timeDN] = selection();
 
 [data, felData, clockStartStop] = datafix (data, timeDN);
 
-ploting(data, measName, clockStartStop);
+%kalibrering(data)
 
-ploting(felData, measName, [])
+
+meth = "sgolay";
+
+window = 31;
+
+for i = 1 : length(window)
+    for j = 1:length(meth) 
+ploting(data, measName, clockStartStop, meth(j), window(i));
+    end
+end
+
+if ~isempty(fieldnames(felData))
+ploting(felData, ['Data med fel ,' measName], [])
+end
 
 toc
