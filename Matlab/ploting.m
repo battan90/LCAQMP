@@ -5,33 +5,34 @@ function [] = ploting(data, measName, clockStartStop, pol, window) %
 
 disp('Creating plots...')
 
-plotcolor = {'#A2142F', '#0000FF', '#00FF00', '#FF0000', '#00FFFF',...
+plotcolor = {'#A2142F', '#0000FF', '#00FF00', '#FF0000', '#00FFFF', ...
     '#FF00FF', '#D95319', '#EDB120', '#7E2F8E', '#FFFF00'};
-figure('units','normalized','outerposition',[0 0 1 1]);
+figure('units', 'normalized', 'outerposition', [0, 0, 1, 1]);
 name = fieldnames(data);
-OneMin = 1/60/24;
-NO2unit = cell([1,length(name)]);
+OneMin = 1 / 60 / 24;
+NO2unit = cell([1, length(name)]);
+
 %% Lägger till datum för mätningen i titel
 
 if ~isempty(clockStartStop)
-    startTime = datetime(max(datenum(clockStartStop(1,:))), ...
+    startTime = datetime(max(datenum(clockStartStop(1, :))), ...
         'ConvertFrom', 'datenum');
-    endTime = datetime(min(datenum(clockStartStop(2,:))), ...
+    endTime = datetime(min(datenum(clockStartStop(2, :))), ...
         'ConvertFrom', 'datenum');
-    
+
     if datestr(startTime, ' yy-mm-dd') == datestr(endTime, ' yy-mm-dd')
         measName = strcat(measName, datestr(startTime, ' yy-mm-dd'));
     elseif any(startTime ~= endTime)
         measName = strcat(measName, datestr(startTime, ' yy-mm-dd'), ...
             ' to ', datestr(endTime, ' yy-mm-dd'));
     end
-    
+
 else
-    
+
     startTime = 0;
-    [M, I] = max(structfun(@height,data));
+    [M, I] = max(structfun(@height, data));
     endTime = data.(name{I}).processor_millis(M);
-    
+
 end
 
 % Skapar plottar för olika fall av indata
@@ -53,46 +54,48 @@ disp('Plotting...')
 %moveMeanAmount = 61;
 
 for i = 1:length(name)
-    subplot(2,5,[1,2])
+    subplot(2, 5, [1, 2])
     plot(data.(name{i}).processor_millis, ...
-        smoothdata(data.(name{i}).SDS011_pm25, pol, window, 'includenan'),...
-        'Color',plotcolor{i},'LineWidth',1.5);hold on;
-    subplot(2,5,[6,7])
+        smoothdata(data.(name{i}).SDS011_pm25, pol, window, 'includenan'), ...
+        'Color', plotcolor{i}, 'LineWidth', 1.5);
+    hold on;
+    subplot(2, 5, [6, 7])
     plot(data.(name{i}).processor_millis, smoothdata(data.(name{i}).SDS011_pm10, ...
-        pol, window, 'includenan'),...
-        'Color',plotcolor{i},'LineWidth',1.5);hold on;
-    subplot(2,5,3)
+        pol, window, 'includenan'), ...
+        'Color', plotcolor{i}, 'LineWidth', 1.5);
+    hold on;
+    subplot(2, 5, 3)
     plot(data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).BME680_humidity, pol, window, 'includenan'), ...
-        'Color',plotcolor{i},'linewidth',1.5);
+        'Color', plotcolor{i}, 'linewidth', 1.5);
     hold on;
-    subplot(2,5,4)
+    subplot(2, 5, 4)
     plot(data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).BME680_temperature, pol, window, 'includenan'), ...
-        'Color',plotcolor{i},'linewidth',1.5);
+        'Color', plotcolor{i}, 'linewidth', 1.5);
     hold on;
-    subplot(2,5,5)
+    subplot(2, 5, 5)
     plot(data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).CozIr_Co2_filtered, pol, window, 'includenan'), ...
-        'Color',plotcolor{i},'linewidth',1.5);
+        'Color', plotcolor{i}, 'linewidth', 1.5);
     hold on;
-    subplot(2,5,8)
+    subplot(2, 5, 8)
     plot(data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).CCS811_TVOC, pol, window, 'includenan'), ...
-        'Color',plotcolor{i},'linewidth',1.5);
+        'Color', plotcolor{i}, 'linewidth', 1.5);
     hold on;
-    
+
     % Plottar NO2 och O3 där de finns
-    if max(contains(fieldnames(data.(name{i})),'NO2'))
-        subplot(2,5,9);hold on
+    if max(contains(fieldnames(data.(name{i})), 'NO2'))
+        subplot(2, 5, 9); hold on
         plot(data.(name{i}).processor_millis, smoothdata(data.(name{i}).NO2, ...
-             pol, window, 'includenan'),'Color',plotcolor{i}, ...
-            'linewidth',0.5);
-        subplot(2,5,10);hold on
+            pol, window, 'includenan'), 'Color', plotcolor{i}, ...
+            'linewidth', 0.5);
+        subplot(2, 5, 10); hold on
         plot(data.(name{i}).processor_millis, smoothdata(data.(name{i}).O3, ...
-             pol, window, 'includenan'),'Color',plotcolor{i},...
-            'linewidth',0.5);
-        
+            pol, window, 'includenan'), 'Color', plotcolor{i}, ...
+            'linewidth', 0.5);
+
         NO2unit{i} = name{i};
     else
         NO2unit{i} = '';
@@ -115,7 +118,7 @@ end
 %   NO2unit{length(NO2unit)+1} = 'UNIT10';
 % end
 
-NO2unit(strcmp('',NO2unit)) = [];
+NO2unit(strcmp('', NO2unit)) = [];
 
 
 % Ordnar plottgrafik, label för axlar och legender.
@@ -125,9 +128,9 @@ sgtitle(measName);
 formatHMS = 'HH:MM:SS';
 
 %PM2.5
-subplot(2,5,[1, 2])
+subplot(2, 5, [1, 2])
 title('PM2.5');
-legend(name,'Location','best','FontSize',8);
+legend(name, 'Location', 'best', 'FontSize', 8);
 legend('boxoff');
 grid on;
 ylabel('Halt [Âµg/m3]');
@@ -138,21 +141,21 @@ xlabel('Tid');
 ax = gca;
 xkelick = ax.XTick;
 xkdiff = median(diff(xkelick));
-TimeVector= (startTime:OneMin*xkdiff:endTime);
-xData = datestr(TimeVector,formatHMS);
+TimeVector = (startTime:OneMin * xkdiff:endTime);
+xData = datestr(TimeVector, formatHMS);
 xkelick(end) = [];
 end_time_of_day = datestr(endTime, formatHMS);
-if length(xData(:,1)) ~= numel(xkelick)
-    xData(end+1,:) = char(end_time_of_day);
+if length(xData(:, 1)) ~= numel(xkelick)
+    xData(end+1, :) = char(end_time_of_day);
 end
-set(gca,'XTick',xkelick);
-set(gca,'XTickLabel',{xData});
-set(gca,'XTickLabelRotation',30)
+set(gca, 'XTick', xkelick);
+set(gca, 'XTickLabel', {xData});
+set(gca, 'XTickLabelRotation', 30)
 
 % PM10
-subplot(2,5,[6, 7])
+subplot(2, 5, [6, 7])
 title('PM10');
-legend(name,'Location','best','FontSize',8);
+legend(name, 'Location', 'best', 'FontSize', 8);
 legend('boxoff');
 grid on;
 ylabel('Halt [Âµg/m3]');
@@ -162,71 +165,70 @@ xlabel('Tid');
 ax = gca;
 xkelick = ax.XTick;
 xkdiff = median(diff(xkelick));
-TimeVector= (startTime:OneMin*xkdiff:endTime);
-xData = datestr(TimeVector,formatHMS);
+TimeVector = (startTime:OneMin * xkdiff:endTime);
+xData = datestr(TimeVector, formatHMS);
 xkelick(end) = [];
 end_time_of_day = datestr(endTime, formatHMS);
-if length(xData(:,1)) ~= numel(xkelick)
-    xData(end+1,:) = char(end_time_of_day);
+if length(xData(:, 1)) ~= numel(xkelick)
+    xData(end+1, :) = char(end_time_of_day);
 end
-set(gca,'XTick',xkelick);
-set(gca,'XTickLabel',{xData});
-set(gca,'XTickLabelRotation',30)
+set(gca, 'XTick', xkelick);
+set(gca, 'XTickLabel', {xData});
+set(gca, 'XTickLabelRotation', 30)
 
 % Luftfuktighet
-subplot(2,5,3)
+subplot(2, 5, 3)
 title('Relativ luftfuktighet');
-legend(name,'Location','best','FontSize',8);
+legend(name, 'Location', 'best', 'FontSize', 8);
 legend('boxoff');
 grid on
 ylabel('%');
 xlabel('Tid [min]');
 
 % Temperatur
-subplot(2,5,4)
+subplot(2, 5, 4)
 title('Temperatur');
-legend(name,'Location','best','FontSize',8);
+legend(name, 'Location', 'best', 'FontSize', 8);
 legend('boxoff');
 grid on;
-ylabel([char(176) 'C']);
+ylabel([char(176), 'C']);
 xlabel('Tid [min]');
 
 % CO2
-subplot(2,5,5)
+subplot(2, 5, 5)
 title('CO2');
-legend(name,'Location','best','FontSize',8);
+legend(name, 'Location', 'best', 'FontSize', 8);
 legend('boxoff');
 grid on;
 xlabel('Tid [min]');
 ylabel('PPM');
 
 % VOC
-subplot(2,5,8)
+subplot(2, 5, 8)
 title('VOC');
-legend(name,'Location','best','FontSize',8);
+legend(name, 'Location', 'best', 'FontSize', 8);
 xlabel('Tid [min]');
 ylabel('PPB');
-legend('boxoff');grid on;
-
-% Subplot NO2
-subplot(2,5,9)
-xlabel('Tid [min]')
-ylabel('PPB')
-title('NO2')
-legend(NO2unit,'Location','best','FontSize',8);
-legend('boxoff');grid on;
-
-% Subplot O3
-subplot(2,5,10)
-xlabel('Tid [min]')
-ylabel('PPB')
-title('O3')
-legend(NO2unit,'Location','best','FontSize',8);
 legend('boxoff');
 grid on;
 
+% Subplot NO2
+subplot(2, 5, 9)
+xlabel('Tid [min]')
+ylabel('PPB')
+title('NO2')
+legend(NO2unit, 'Location', 'best', 'FontSize', 8);
+legend('boxoff');
+grid on;
 
-
+% Subplot O3
+subplot(2, 5, 10)
+xlabel('Tid [min]')
+ylabel('PPB')
+title('O3')
+legend(NO2unit, 'Location', 'best', 'FontSize', 8);
+legend('boxoff');
+grid on;
 
 %% Variationer med avstånd
 % Görs inte  mätningen på olika avstånd från väg exempelvis bör denna vara

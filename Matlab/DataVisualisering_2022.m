@@ -23,6 +23,7 @@ measName = 'Botaniska, ';
 % else
 %     measName = input;
 % end
+
 %% Öppna fönster för att välja .csv data
 
 % while counter
@@ -38,9 +39,9 @@ measName = 'Botaniska, ';
 %         end
 %     end
 % end
-[data, timeDN] = selection();
+data = selection();
 
-[data, felData, clockStartStop] = datafix (data, timeDN);
+[data, felData, clockStartStop] = datafix(data);
 
 %kalibrering(data)
 
@@ -49,14 +50,14 @@ meth = "sgolay";
 
 window = 31;
 
-for i = 1 : length(window)
-    for j = 1:length(meth) 
-ploting(data, measName, clockStartStop, meth(j), window(i));
+for i = 1:length(window)
+    for j = 1:length(meth)
+        ploting(data, measName, clockStartStop, meth(j), window(i));
     end
 end
 
 if ~isempty(fieldnames(felData))
-ploting(felData, ['Data med fel ,' measName], [])
+    ploting(felData, ['Data med fel ,', measName], [])
 end
 
 toc
