@@ -50,7 +50,7 @@ meth = "sgolay";
 
 window = 31;
 
-        ploting(data, measName, clockStartStop, meth, window);
+ploting(data, measName, clockStartStop, meth, window);
 
 if ~isempty(fieldnames(felData))
     ploting(felData, ['Data med fel ,', measName], clockStartStop, meth, window);
