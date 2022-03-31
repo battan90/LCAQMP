@@ -109,17 +109,17 @@ for i = 1:length(subSetting)
     ylabel(subLabeling.ylabel{i});
     grid on;
 
-    
+
     if i <= 2
-            % Timestamps PM (Kan vara värt att uppdatera dessa så de ger jämna
-            % klockslag istället för 50 minuter isär från starttid
+        % Timestamps PM (Kan vara värt att uppdatera dessa så de ger jämna
+        % klockslag istället för 50 minuter isär från starttid
         ax = gca;
         xkdiff = median(diff(ax.XTick));
         xData = datestr((startTime:OneMin * xkdiff:endTime), formatHMS);
-%         end_time_of_day = datestr(endTime, formatHMS);
-%         if length(xData(:, 1)) ~= numel(ax.XTick(1,end-1))
-%             xData(end+1, :) = char(end_time_of_day);
-%         end
+        %         end_time_of_day = datestr(endTime, formatHMS);
+        %         if length(xData(:, 1)) ~= numel(ax.XTick(1,end-1))
+        %             xData(end+1, :) = char(end_time_of_day);
+        %         end
         set(gca, 'XTick', ax.XTick);
         set(gca, 'XTickLabel', {xData});
         set(gca, 'XTickLabelRotation', 30)
