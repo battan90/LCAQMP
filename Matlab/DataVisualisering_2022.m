@@ -15,7 +15,7 @@ format long
 tic
 counter = 1;
 measName = 'Botaniska, ';
-
+Kalibrering = 0
 %% Namn på mätningen
 % input = inputdlg("Namn på mätning", "Namn på mätning");
 % if input == ""
@@ -41,7 +41,7 @@ measName = 'Botaniska, ';
 % end
 data = selection();
 
-[data, felData, clockStartStop] = datafix(data);
+[data, felData, clockStartStop] = datafix(data, Kalibrering);
 
 %kalibrering(data)
 

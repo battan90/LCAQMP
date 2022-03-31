@@ -1,4 +1,4 @@
-function [dataCommon, felData, clockStartStop] = datafix(data)
+function [dataCommon, felData, clockStartStop] = datafix(data, Kalibrering)
 %{
     Datafix   -   Justerar mätdatan inför plot
     Skapar en gemensam tidslinje för samtlig mätdata med t0 efter den
@@ -171,9 +171,12 @@ else
                 Var29, 'CozIR')) = NaN();
         end
     end
-    % for i = 1:length(name)
-    %     dataCommon.(name{i}) = data.(name{i})(1:min(structfun(@height,data)), :);
-    % end
+    if Kalibrering == 1
+    for i = 1:length(name)
+        dataCommon.(name{i}) = data.(name{i})(1:min(structfun(@height,data)), :);
+    end
+    else
     dataCommon = data;
+    end
 end
 end
