@@ -113,19 +113,13 @@ if sum(tidsFel) ~= length(name)
     commonStart = zeros(1:length(name)-length(tidsFel));
     commonEnd = zeros(1:length(name)-length(tidsFel));
 
-    felData = data;
+    %felData = data;
     for i = 1:length(name)
         if tidsFel(i)
+            felData.(name{i}) = data.(name{i});
             data = rmfield(data, name{i});
             continue
         end
-        felData = rmfield(felData, name{i});
-        data.(name{i}).GPS_year = year(datetime(timeDN{i}, 'ConvertFrom', 'datenum'));
-        data.(name{i}).GPS_month = month(datetime(timeDN{i}, 'ConvertFrom', 'datenum'));
-        data.(name{i}).GPS_day = day(datetime(timeDN{i}, 'ConvertFrom', 'datenum'));
-        data.(name{i}).GPS_hour = hour(datetime(timeDN{i}, 'ConvertFrom', 'datenum'));
-        data.(name{i}).GPS_minute = minute(datetime(timeDN{i}, 'ConvertFrom', 'datenum'));
-        data.(name{i}).GPS_seconds = second(datetime(timeDN{i}, 'ConvertFrom', 'datenum'));
         % nedan ska ange index för gemensam start- respektive sluttid för
         % alla mätare
         commonStart(i) = find(timeDN{i} >= datenum(startTime) & ...
@@ -158,29 +152,6 @@ if sum(tidsFel) ~= length(name)
             data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}).(width(data.(name{i}))), ...
                 'CozIR')) = NaN();
         end
-
-        %         if max(contains(data.(name{i}).Var29, 'GPS'))
-        %             data.(name{i}).GPS_seconds(contains(...
-        %                 data.(name{i}).(width(data.(name{i}))), ...
-        %                 'GPS'))
-        %             data.(name{i}).GPS_seconds(contains(...
-        %                 data.(name{i}).(width(data.(name{i}))), ...
-        %                 'GPS')) = data.(name{i}).GPS_seconds(contains(data.(name{i}).(width(data.(name{i}))), ...
-        %                 'GPS'))+2;
-        %             data.(name{i}).GPS_minute(find(data.(name{i}).GPS_seconds >= 60))
-        %             data.(name{i}).GPS_minute(find(data.(name{i}).GPS_seconds >= 60)) = data.(name{i}).GPS_minute(find(data.(name{i}).GPS_seconds >= 60)) + 1;
-        %             data.(name{i}).GPS_hour(find(data.(name{i}).GPS_minute >= 60))
-        %             data.(name{i}).GPS_hour(find(data.(name{i}).GPS_minute >= 60)) = data.(name{i}).GPS_hour(find(data.(name{i}).GPS_minute >= 60)) + 1;
-        %             data.(name{i}).GPS_day(find(data.(name{i}).GPS_hour > 24))
-        %             %data.(name{i}).GPS_day(find(data.(name{i}).GPS_hour > 24)) = data.(name{i}).GPS_day(find(data.(name{i}).GPS_hour >= 24)) + 1;
-        %             data.(name{i}).GPS_day(find(data.(name{i}).GPS_hour > 24))
-        %             data.(name{i}).GPS_hour(find(data.(name{i}).GPS_hour > 24)) = data.(name{i}).GPS_hour(find(data.(name{i}).GPS_hour >= 24)) - 24;
-        %             data.(name{i}).GPS_hour(find(data.(name{i}).GPS_hour > 24))
-        %             data.(name{i}).GPS_minute(find(data.(name{i}).GPS_minute >= 60)) = data.(name{i}).GPS_minute(find(data.(name{i}).GPS_minute >= 60)) - 60;
-        %             data.(name{i}).GPS_minute(find(data.(name{i}).GPS_minute >= 60))
-        %             data.(name{i}).GPS_seconds(find(data.(name{i}).GPS_seconds >= 60)) = data.(name{i}).GPS_seconds(find(data.(name{i}).GPS_seconds >= 60)) - 60;
-        %
-        %         end
     end
 
 else
@@ -204,16 +175,16 @@ else
     dataCommon = data;
 
 end
-for i = 1:length(name)
-    sprintf('start %i:%i:%i', ...
-        data.(name{i}).GPS_hour(commonStart(i)), ...
-        data.(name{i}).GPS_minute(commonStart(i)), ...
-        data.(name{i}).GPS_seconds(commonStart(i)))
-    sprintf('slut %i:%i:%i', ...
-        data.(name{i}).GPS_hour(commonEnd(i)), ...
-        data.(name{i}).GPS_minute(commonEnd(i)), ...
-        data.(name{i}).GPS_seconds(commonEnd(i)))
-end
+% for i = 1:length(name)
+%     sprintf('start %i:%i:%i', ...
+%         data.(name{i}).GPS_hour(commonStart(i)), ...
+%         data.(name{i}).GPS_minute(commonStart(i)), ...
+%         data.(name{i}).GPS_seconds(commonStart(i)))
+%     sprintf('slut %i:%i:%i', ...
+%         data.(name{i}).GPS_hour(commonEnd(i)), ...
+%         data.(name{i}).GPS_minute(commonEnd(i)), ...
+%         data.(name{i}).GPS_seconds(commonEnd(i)))
+% end
 
 
 end
