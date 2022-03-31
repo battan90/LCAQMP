@@ -50,15 +50,11 @@ meth = "sgolay";
 
 window = 31;
 
-for i = 1:length(window)
-    for j = 1:length(meth)
-        %ploting(data, measName, clockStartStop, meth(j), window(i));
-    end
-end
+        ploting(data, measName, clockStartStop, meth, window);
 
 if ~isempty(fieldnames(felData))
-    %ploting(felData, ['Data med fel ,', measName], clockStartStop, meth(j), window(i));
+    ploting(felData, ['Data med fel ,', measName], clockStartStop, meth, window);
 end
 
-print2excel(data);
+%print2excel(data);
 toc

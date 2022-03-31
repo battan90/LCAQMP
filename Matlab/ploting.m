@@ -76,7 +76,7 @@ subSetting = {[1, 2], [6, 7], 3, 4, 5, 8, 9, 10};
 
 for i = 1:length(name)
     plotsetting = {'Color', plotColor.(name{i}), 'LineWidth', 1.5};
-    for k = 1:length(subSetting)
+    for k = 1:length(fieldnames(plotData.(name{i})))
         fields = fieldnames(plotData.(name{i}));
         subplot(2, 5, subSetting{k})
         plot(plotData.(name{i}).(fields{k}){:, 1}, plotData.(name{i}).(fields{k}){:, 2}, plotsetting{:});

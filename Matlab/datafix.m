@@ -93,7 +93,7 @@ for i = 1:length(name)
 end
 tidsFel = tidsFel > 0;
 clockStartStop(:, tidsFel) = [];
-felData = {};
+felData = struct;
 
 %%
 if sum(tidsFel) ~= length(name)
@@ -171,20 +171,9 @@ else
                 Var29, 'CozIR')) = NaN();
         end
     end
-
+    % for i = 1:length(name)
+    %     dataCommon.(name{i}) = data.(name{i})(1:min(structfun(@height,data)), :);
+    % end
     dataCommon = data;
-
 end
-% for i = 1:length(name)
-%     sprintf('start %i:%i:%i', ...
-%         data.(name{i}).GPS_hour(commonStart(i)), ...
-%         data.(name{i}).GPS_minute(commonStart(i)), ...
-%         data.(name{i}).GPS_seconds(commonStart(i)))
-%     sprintf('slut %i:%i:%i', ...
-%         data.(name{i}).GPS_hour(commonEnd(i)), ...
-%         data.(name{i}).GPS_minute(commonEnd(i)), ...
-%         data.(name{i}).GPS_seconds(commonEnd(i)))
-% end
-
-
 end
