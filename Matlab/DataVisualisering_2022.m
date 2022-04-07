@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Detta script har använts för att visualisera data uppmätt med LCAQMP.
-% Det är lite rörigt, men funkar helt ok för det mesta vid det här
-% laget. Jag försöker förklara lite vad alla delar gör och varför de är
-% där i kommentarer, men jag är 100 % säker på att saker fortfarande är
-% oklara. Ni får gärna höra av er om ni har funderingar så kan jag försöka
-% förklara om jag har tid :) Vill ni ha allmän uppstart eller någon form
-% av genomgång kan ni också höra av er så kan vi nog lösa det!
+% Detta script har anvÃ¤nts fÃ¶r att visualisera data uppmÃ¤tt med LCAQMP.
+% Det Ã¤r lite rÃ¶rigt, men funkar helt ok fÃ¶r det mesta vid det hÃ¤r
+% laget. Jag fÃ¶rsÃ¶ker fÃ¶rklara lite vad alla delar gÃ¶r och varfÃ¶r de Ã¤r
+% dÃ¤r i kommentarer, men jag Ã¤r 100 % sÃ¤ker pÃ¥ att saker fortfarande Ã¤r
+% oklara. Ni fÃ¥r gÃ¤rna hÃ¶ra av er om ni har funderingar sÃ¥ kan jag fÃ¶rsÃ¶ka
+% fÃ¶rklara om jag har tid :) Vill ni ha allmÃ¤n uppstart eller nÃ¥gon form
+% av genomgÃ¥ng kan ni ocksÃ¥ hÃ¶ra av er sÃ¥ kan vi nog lÃ¶sa det!
 % //Axel Eiman
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -19,19 +19,19 @@ Kalibrering = 0;
 if Kalibrering == 1
     list = {'SDS011_pm25', 'SDS011_pm10', 'BME680_temperature', ...
         'BME680_humidity', 'CCS811_TVOC', 'CozIr_Co2_filtered', 'NO2', 'O3'};
-    [indx, tf] = listdlg('PromptString', 'Välj vilken data att kalibrera', ...
+    [indx, tf] = listdlg('PromptString', 'VÃ¤lj vilken data att kalibrera', ...
         'SelectionMode', 'single', 'ListString', list);
 end
 
-%% Namn på mätningen
-% input = inputdlg("Namn på mätning", "Namn på mätning");
+%% Namn pÃ¥ mÃ¤tningen
+% input = inputdlg("Namn pÃ¥ mÃ¤tning", "Namn pÃ¥ mÃ¤tning");
 % if input == ""
-%     measName = 'Mätning, ';
+%     measName = 'MÃ¤tning, ';
 % else
 %     measName = input;
 % end
 
-%% Öppna fönster för att välja .csv data
+%% Ã–ppna fÃ¶nster fÃ¶r att vÃ¤lja .csv data
 
 % while counter
 %     try
