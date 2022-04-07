@@ -1,5 +1,11 @@
 %% Bearbetar CO2-datan inför kalibrering
 clf
+clc
+clear
+data = selection();
+Kalibrering = 1;
+[data, felData, clockStartStop] = datafix(data, Kalibrering);
+
 name = fieldnames(data);
 
 % Överblick: Först sorterar vi bort alla NaN och 0:or från datan, sedan
@@ -46,7 +52,7 @@ for i = 1:length(name)
         end
     end
     % Glidande medelvärde för brusreducering:
-    data.(name{i}).CozIr_Co2_filtered = movmean(data.(name{i}).CozIr_Co2_filtered, movmean_by_amount);
+    data.(name{i}).CozIr_Co2_filtered = movmean(data.(name{i}).CozIr_Co2_filtered, 3, 'omitnan');
     
     for j = 1:length(data.(name{i}).GPS_hour)
         % appendar de nya arrayerna som behövs till curve fitting:

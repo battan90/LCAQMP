@@ -1,4 +1,4 @@
-function [dataCommon, felData, clockStartStop] = datafix(data)
+function [dataCommon, felData, clockStartStop] = datafix(data, Kalibrering)
 %{
     Datafix   -   Justerar mätdatan inför plot
     Skapar en gemensam tidslinje för samtlig mätdata med t0 efter den
@@ -52,6 +52,8 @@ for i = 1:length(name)
         (60 * 1000);
     data.(name{i}).GPS_year = data.(name{i}).GPS_year + 2000;
     data.(name{i}).GPS_hour = data.(name{i}).GPS_hour - 1;
+    %data.(name{i}).NO2 = data.(name{i}).NO2 * 1000;
+    %data.(name{i}).O3 = data.(name{i}).O3 * 1000;
 
     timeDN{i} = datenum(datetime(data.(name{i}).GPS_year, ...
         data.(name{i}).GPS_month, data.(name{i}).GPS_day, ...
@@ -59,7 +61,7 @@ for i = 1:length(name)
         data.(name{i}).GPS_seconds));
 
     data.(name{i}).CozIr_Co2_filtered = ...
-        data.(name{i}).CozIr_Co2_filtered ./ korr.(name{i})(1) - korr.(name{i})(2);
+        (data.(name{i}).CozIr_Co2_filtered - korr.(name{i})(2)) ./ korr.(name{i})(1);
     % Säkerställer så att datan in har en fullständigt tidsfel.
     if data.(name{i}).GPS_year(floor(length(data.(name{i}).GPS_year)/2)) >= years(1) && ...
             data.(name{i}).GPS_year(end) <= years(2)
@@ -146,7 +148,7 @@ if sum(tidsFel) ~= length(name)
             msgbox('För höga värden för CO2 på %s', name{i});
         end
         % Tar bort värden som innebär att de troligtvis inte stämmer
-        if max(contains(data.(name{i}).Var29, 'CozIR'))
+        if max(contains(data.(name{i}).Errors, 'CozIR'))
             data.(name{i}).CozIr_Co2(contains(data.(name{i}).(width(data.(name{i}))), ...
                 'CozIR')) = NaN();
             data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}).(width(data.(name{i}))), ...
@@ -164,16 +166,19 @@ else
             msgbox('För höga värden för CO2 på %s', name{i});
         end
         % Tar bort värden som innebär att de troligtvis inte stämmer
-        if contains(data.(name{i}).Var29, 'CozIR')
+        if contains(data.(name{i}).Errors, 'CozIR')
             data.(name{i}).CozIr_Co2(contains(data.(name{i}). ...
-                Var29, 'CozIR')) = NaN();
+                Errors, 'CozIR')) = NaN();
             data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}). ...
-                Var29, 'CozIR')) = NaN();
+                Errors, 'CozIR')) = NaN();
         end
     end
-    % for i = 1:length(name)
-    %     dataCommon.(name{i}) = data.(name{i})(1:min(structfun(@height,data)), :);
-    % end
-    dataCommon = data;
+    if Kalibrering == 1
+        for i = 1:length(name)
+            dataCommon.(name{i}) = data.(name{i})(1:min(structfun(@height, data)), :);
+        end
+    else
+        dataCommon = data;
+    end
 end
 end
