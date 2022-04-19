@@ -9,6 +9,7 @@ plotColor = struct('UNIT1', '#a6cee3', 'UNIT2', '#1f78b4', ...
     'UNIT6', '#e31a1c', 'UNIT7', '#000000', 'UNIT8', '#ff7f00', ...
     'UNIT9', '#BBBBBB', 'UNIT10', '#6a3d9a');
 figure('units', 'normalized', 'outerposition', [0, 0, 1, 1]);
+%set(gcf,'WindowState','maximized')
 name = fieldnames(data);
 OneMin = 1 / 60 / 24;
 NO2unit = cell([1, length(name)]);
@@ -56,12 +57,14 @@ for i = 1:length(name)
         smoothdata(data.(name{i}).BME680_temperature, smoothing{:})};
 
     plotData.(name{i}).co2Filtered = {data.(name{i}).processor_millis, ...
-        smoothdata(data.(name{i}).CozIr_Co2_filtered, smoothing{:})};
+        smoothdata(data.(name{i}).CozIr_Co2_filtered, smoothing{1}, ...
+        smoothing{2}*6, smoothing{3})};
 
     plotData.(name{i}).voc = {data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).CCS811_TVOC, smoothing{:})};
 
-    if max(contains(fieldnames(data.(name{i})), 'NO2'))
+    if max(contains(fieldnames(data.(name{i})), 'NO2')) && ...
+            max(data.(name{i}).NO2) ~= -1000 && min(data.(name{i}).NO2) ~= -1000
         plotData.(name{i}).no2 = {data.(name{i}).processor_millis, ...
             smoothdata(data.(name{i}).NO2, smoothing{:})};
         plotData.(name{i}).o3 = {data.(name{i}).processor_millis, ...
@@ -109,17 +112,12 @@ for i = 1:length(subSetting)
     ylabel(subLabeling.ylabel{i});
     grid on;
 
-
     if i <= 2
         % Timestamps PM (Kan vara värt att uppdatera dessa så de ger jämna
         % klockslag istället för 50 minuter isär från starttid
         ax = gca;
         xkdiff = median(diff(ax.XTick));
         xData = datestr((startTime:OneMin * xkdiff:endTime), formatHMS);
-        %         end_time_of_day = datestr(endTime, formatHMS);
-        %         if length(xData(:, 1)) ~= numel(ax.XTick(1,end-1))
-        %             xData(end+1, :) = char(end_time_of_day);
-        %         end
         set(gca, 'XTick', ax.XTick);
         set(gca, 'XTickLabel', {xData});
         set(gca, 'XTickLabelRotation', 30)
