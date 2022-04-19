@@ -40,10 +40,12 @@ for i = 1:length(fileID)
         temp = regexp(fileID{i}, '_', 'split');
         temp = regexp(temp, '\d*', 'Match');
         name(i) = strcat('UNIT', temp{1});
-    else
+    elseif contains(fileID{i}, '\.')
         temp = regexp(fileID{i}, '\.', 'split');
         temp = regexp(temp, '\d*', 'Match');
         name(i) = strcat('UNIT', temp{1});
+    else
+        name(i) = 'Nordstan';
     end
     fileDir = append(path, fileID{i});
     opts = detectImportOptions(fileDir);

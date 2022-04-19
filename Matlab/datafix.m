@@ -41,13 +41,12 @@ korr = struct('UNIT1', [1, 0], 'UNIT2', [1.002, -37.44], ...
     'UNIT3', [1.025, -11.84], 'UNIT4', [1.153, 287.5], ...
     'UNIT5', [0.8818, -112.1], 'UNIT6', [0.985, 13.04], 'UNIT7', ...
     [0.9868, -58.27], 'UNIT8', [0.9683, -68.95], 'UNIT9', [0.9979, -11.75], ...
-    'UNIT10', [1, 0]);
+    'UNIT10', [1, 0], 'Nordstan', [1, 0]);
 dataCommon = struct;
 timeDN = {length(name)};
 
 for i = 1:length(name)
     fprintf("... for %s\n", name{i})
-
     data.(name{i}).processor_millis = data.(name{i}).processor_millis / ...
         (60 * 1000);
     data.(name{i}).GPS_year = data.(name{i}).GPS_year + 2000;
@@ -67,7 +66,7 @@ for i = 1:length(name)
             data.(name{i}).GPS_year(end) <= years(2)
         % Hittar första tiden utan fel.
         for j = 1:length(timeDN{i})
-            if ~contains(char(data.(name{i}).(width(data.(name{i}))){j}), ...
+            if ~contains(char(data.(name{i}).Errors{j}), ...
                     'GPS') && years(1) < data.(name{i}).GPS_year(j) && ...
                     data.(name{i}).GPS_year(j) <= years(2)
                 mini = j;
@@ -77,7 +76,7 @@ for i = 1:length(name)
         end
 
         for j = length(timeDN{i}):-1:1
-            if ~contains(char(data.(name{i}).(width(data.(name{i}))){j}), 'GPS')
+            if ~contains(char(data.(name{i}).Errors{j}), 'GPS')
                 maxi = j;
                 break
             end

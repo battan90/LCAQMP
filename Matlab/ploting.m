@@ -78,7 +78,11 @@ end
 subSetting = {[1, 2], [6, 7], 3, 4, 5, 8, 9, 10};
 
 for i = 1:length(name)
+    if ismember('Nordstan', name{i})
+        plotsetting = {'Color', 'b', 'LineWidth', 1.5, 'LineStyle', ':'};
+    else
     plotsetting = {'Color', plotColor.(name{i}), 'LineWidth', 1.5};
+    end
     for k = 1:length(fieldnames(plotData.(name{i})))
         fields = fieldnames(plotData.(name{i}));
         subplot(2, 5, subSetting{k})
@@ -102,7 +106,7 @@ subLabeling.xlabel = {'Tid', 'Tid', 'Tid [min]', 'Tid [min]', 'Tid [min]', ...
     'Tid [min]', 'Tid [min]', 'Tid [min]'};
 subLabeling.ylabel = {'Halt [Âµg/m3]', 'Halt [Âµg/m3]', ...
     '%', [char(176), 'C'], 'PPB', 'PPB', 'PPB', 'PPB'};
-
+%xLength = (0:10:max(structfun(@height, data))*2000/(60*1000));
 for i = 1:length(subSetting)
     subplot(2, 5, subSetting{i})
     title(subLabeling.title{i});
@@ -116,11 +120,16 @@ for i = 1:length(subSetting)
         % Timestamps PM (Kan vara värt att uppdatera dessa så de ger jämna
         % klockslag istället för 50 minuter isär från starttid
         ax = gca;
+        %xkdiff = median(diff(xLength));
+        %set(gca, 'XTick', xLength);
         xkdiff = median(diff(ax.XTick));
         xData = datestr((startTime:OneMin * xkdiff:endTime), formatHMS);
         set(gca, 'XTick', ax.XTick);
         set(gca, 'XTickLabel', {xData});
-        set(gca, 'XTickLabelRotation', 30)
+        set(gca, 'XTickLabelRotation', 30);
+        %ylim([0 15]);
+        %set(gca, 'YTick', (0:15));
+        %set(gca, 'YTickLabel', (0:15));
     end
 
     %% Variationer med avstånd
