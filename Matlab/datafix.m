@@ -1,4 +1,4 @@
-function [dataCommon, felData, clockStartStop] = datafix(data, Kalibrering)
+function [dataCommon, felData, clockStartStop, offset] = datafix(data, Kalibrering)
 %{
     Datafix   -   Justerar mätdatan inför plot
     Skapar en gemensam tidslinje för samtlig mätdata med t0 efter den
@@ -42,6 +42,11 @@ korr = struct('UNIT1', [1, 0], 'UNIT2', [1.002, -37.44], ...
     'UNIT5', [0.8818, -112.1], 'UNIT6', [0.985, 13.04], 'UNIT7', ...
     [0.9868, -58.27], 'UNIT8', [0.9683, -68.95], 'UNIT9', [0.9979, -11.75], ...
     'UNIT10', [1, 0], 'Nordstan', [1, 0], 'Agot790', [1, 0], 'Agot801', [1, 0]);
+offset = struct('UNIT1', 0, 'UNIT2', 0, ...
+    'UNIT3', 0, 'UNIT4', 0, ...
+    'UNIT5', 130.2, 'UNIT6', -13.31, 'UNIT7', ...
+    0, 'UNIT8', 71.16, 'UNIT9', 11.93, ...
+    'UNIT10', 0, 'Nordstan', 0, 'Agot790', 0, 'Agot801', 0);
 dataCommon = struct;
 timeDN = {length(name)};
 
@@ -50,7 +55,7 @@ for i = 1:length(name)
     data.(name{i}).processor_millis = data.(name{i}).processor_millis / ...
         (60 * 1000);
     data.(name{i}).GPS_year = data.(name{i}).GPS_year + 2000;
-    if ~contains(name{i}, 'UNIT')
+    if contains(name{i}, 'UNIT')
     data.(name{i}).GPS_hour = data.(name{i}).GPS_hour - 1;
     end
     %     if ismember('NO2', fieldnames(data.(name{i}))) && ~strcmp(name{i}, 'Nordstan')
@@ -100,7 +105,7 @@ clockStartStop(:, tidsFel) = [];
 felData = struct;
 
 %%
-if sum(tidsFel) ~= length(name)
+if sum(tidsFel) ==0%~= length(name)
     % Loopar för att hitta den tidpunkt då samtliga enheter loggar samt den
     % tidpunkt då första enheten stängs av.
 
@@ -118,11 +123,11 @@ if sum(tidsFel) ~= length(name)
     commonEnd = zeros(1:length(name)-length(tidsFel));
 
     for i = 1:length(name)
-        if tidsFel(i)
-            felData.(name{i}) = data.(name{i});
-            data = rmfield(data, name{i});
-            continue
-        end
+%         if tidsFel(i)
+%             felData.(name{i}) = data.(name{i});
+%             data = rmfield(data, name{i});
+%             continue
+%         end
         % nedan ska ange index för gemensam start- respektive sluttid för
         % alla mätare
         commonStart(i) = find(timeDN{i} >= datenum(startTime) & ...

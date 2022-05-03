@@ -16,6 +16,7 @@ tic
 counter = 1;
 %measName = 'Botaniska, ';
 Kalibrering = 0;
+plotSolo = 1;
 if Kalibrering == 1
     list = {'SDS011_pm25', 'SDS011_pm10', 'BME680_temperature', ...
         'BME680_humidity', 'CCS811_TVOC', 'CozIr_Co2_filtered', 'NO2', 'O3'};
@@ -48,7 +49,7 @@ end
 % end
 [data, measName] = selection();
 
-[data, felData, clockStartStop] = datafix(data, Kalibrering);
+[data, felData, clockStartStop, offset] = datafix(data, Kalibrering);
 
 %kalibrering(data)
 
@@ -57,10 +58,10 @@ meth = "sgolay";
 
 window = 31;
 
-ploting(data, measName, clockStartStop, meth, window);
+ploting(data, measName, clockStartStop, meth, window, plotSolo, offset);
 
 if ~isempty(fieldnames(felData))
-    ploting(felData, ['Data med fel ,', measName], clockStartStop, meth, window);
+    ploting(felData, ['Data med fel ,', measName], clockStartStop, meth, window, plotSolo);
 end
 
 %print2excel(data);

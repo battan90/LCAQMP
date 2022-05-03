@@ -1,4 +1,4 @@
-function [] = ploting(data, measName, clockStartStop, pol, window) %
+function [] = ploting(data, measName, clockStartStop, pol, window, plotSolo, offset) %
 %PLOT Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -8,7 +8,7 @@ plotColor = struct('UNIT1', '#a6cee3', 'UNIT2', '#1f78b4', ...
     'UNIT3', '#e7298a', 'UNIT4', '#33a02c', 'UNIT5', '#1b9e77', ...
     'UNIT6', '#e31a1c', 'UNIT7', '#000000', 'UNIT8', '#ff7f00', ...
     'UNIT9', '#BBBBBB', 'UNIT10', '#6a3d9a');
-figure('units', 'normalized', 'outerposition', [0, 0, 1, 1]);
+%figure('units', 'normalized', 'outerposition', [0, 0, 1, 1]);
 %set(gcf,'WindowState','maximized')
 name = fieldnames(data);
 OneMin = 1 / 60 / 24;
@@ -21,20 +21,20 @@ if ~isempty(clockStartStop)
         'ConvertFrom', 'datenum');
     endTime = datetime(min(datenum(clockStartStop(2, :))), ...
         'ConvertFrom', 'datenum');
-
+    
     if datestr(startTime, ' yy-mm-dd') == datestr(endTime, ' yy-mm-dd')
         measName = strcat(measName, datestr(startTime, ' yy-mm-dd'));
     elseif any(startTime ~= endTime)
         measName = strcat(measName, datestr(startTime, ' yy-mm-dd'), ...
             ' to ', datestr(endTime, ' yy-mm-dd'));
     end
-
+    
 else
-
+    
     startTime = 0;
     [M, I] = max(structfun(@height, data));
     endTime = data.(name{I}).processor_millis(M);
-
+    
 end
 
 % Skapar plottar för olika fall av indata
@@ -46,25 +46,25 @@ smoothing = {pol, window, 'includenan'};
 for i = 1:length(name)
     plotData.(name{i}).pm25 = {data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).SDS011_pm25, smoothing{:})};
-
+    
     plotData.(name{i}).pm10 = {data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).SDS011_pm10, smoothing{:})};
-
+    
     plotData.(name{i}).humidity = {data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).BME680_humidity, smoothing{:})};
-
+    
     plotData.(name{i}).temperature = {data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).BME680_temperature, smoothing{:})};
-
+    
     plotData.(name{i}).co2Filtered = {data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).CozIr_Co2_filtered, smoothing{1}, ...
         smoothing{2}*6, smoothing{3})};
-
+    
     plotData.(name{i}).voc = {data.(name{i}).processor_millis, ...
         smoothdata(data.(name{i}).CCS811_TVOC, smoothing{:})};
-
+    
     if max(contains(fieldnames(data.(name{i})), 'NO2')) && ...
-            max(data.(name{i}).NO2) ~= -1000 && min(data.(name{i}).NO2) ~= -1000
+            max(data.(name{i}).NO2) ~= -1 && min(data.(name{i}).NO2) ~= -1
         plotData.(name{i}).no2 = {data.(name{i}).processor_millis, ...
             smoothdata(data.(name{i}).NO2, smoothing{:})};
         plotData.(name{i}).o3 = {data.(name{i}).processor_millis, ...
@@ -76,20 +76,76 @@ for i = 1:length(name)
 end
 
 subSetting = {[1, 2], [6, 7], 3, 4, 5, 8, 9, 10};
-
+counter = length(name);
+if plotSolo == 1
+    Title = {'PM2.5', 'PM10', 'Relativ luftfuktighet', 'Temperatur', ...
+        'CO2', 'VOC', 'NO2', 'O3'};
+    Legend = {name, name, name, name, name, name, NO2unit, NO2unit};
+    Xlabel = {'Tid', 'Tid', 'Tid [min]', 'Tid [min]', 'Tid [min]', ...
+        'Tid [min]', 'Tid [min]', 'Tid [min]'};
+    Ylabel = {'Halt [Âµg/m3]', 'Halt [Âµg/m3]', ...
+        '%', [char(176), 'C'], 'PPB', 'PPB', 'PPB', 'PPB'};
+    formatHMS = 'HH:MM:SS';
+    for i = 1:length(Title)
+        figure
+        for j = 1:length(name)
+            if ~contains(name{j}, 'UNIT')
+                plotsetting = {'Color', plotColor.(name{counter}), ...
+                    'LineWidth', 1.5, 'LineStyle', ':'};
+                counter = counter - 1;
+            else
+                plotsetting = {'Color', plotColor.(name{j}), 'LineWidth', 1.5};
+            end
+            fields = fieldnames(plotData.(name{j}));
+            if i <= length(fields)
+            plot(plotData.(name{j}).(fields{i}){:, 1}, ...
+                plotData.(name{j}).(fields{i}){:, 2}, plotsetting{:});
+            hold on;
+            end
+        end
+        title(Title{i});
+        legend(Legend{i}, 'Location', 'best', 'FontSize', 8);
+        legend('boxoff');
+        xlabel(Xlabel{i});
+        ylabel(Ylabel{i});
+        hold off
+        grid on;
+        if i <= 2
+            % Timestamps PM (Kan vara värt att uppdatera dessa så de ger jämna
+            % klockslag istället för 50 minuter isär från starttid
+            ax = gca;
+            %xkdiff = median(diff(xLength));
+            %set(gca, 'XTick', xLength);
+            xkdiff = median(diff(ax.XTick));
+            xData = datestr((startTime:OneMin * xkdiff:endTime), formatHMS);
+            set(gca, 'XTick', ax.XTick);
+            set(gca, 'XTickLabel', {xData});
+            set(gca, 'XTickLabelRotation', 30);
+            %ylim([0 15]);
+            %set(gca, 'YTick', (0:15));
+            %set(gca, 'YTickLabel', (0:15));
+        end
+    end
+    
+elseif plotSolo == 0
+figure
 for i = 1:length(name)
-    if ismember('Nordstan', name{i})
-        plotsetting = {'Color', 'b', 'LineWidth', 1.5, 'LineStyle', ':'};
+    if ~contains(name{i}, 'UNIT')
+        plotsetting = {'Color', plotColor.(name{counter}), 'LineWidth', 1.5, ...
+            'LineStyle', ':'};
+        counter = counter + 1;
     else
-    plotsetting = {'Color', plotColor.(name{i}), 'LineWidth', 1.5};
+        plotsetting = {'Color', plotColor.(name{i}), 'LineWidth', 1.5};
     end
-    for k = 1:length(fieldnames(plotData.(name{i})))
-        fields = fieldnames(plotData.(name{i}));
-        subplot(2, 5, subSetting{k})
-        plot(plotData.(name{i}).(fields{k}){:, 1}, plotData.(name{i}).(fields{k}){:, 2}, plotsetting{:});
-        hold on;
-    end
+        for k = 1:length(fieldnames(plotData.(name{i})))
+            fields = fieldnames(plotData.(name{i}));
+            subplot(2, 5, subSetting{k})
+            plot(plotData.(name{i}).(fields{k}){:, 1}, ...
+                plotData.(name{i}).(fields{k}){:, 2}, plotsetting{:});
+            hold on;
+        end
 end
+
 
 NO2unit(strcmp('', NO2unit)) = [];
 
@@ -184,5 +240,6 @@ for i = 1:length(subSetting)
     % grid on;
     % xlim([min(DISTANCES)-10, max(DISTANCES)+10]);
     % ylim([0, yMax])
-
+end
+end
 end

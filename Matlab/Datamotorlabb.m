@@ -41,4 +41,4 @@ a1 = head(a1,29695);
 clear opts
 %% Plott
 
-stackedplot(a1, {'MFC1SetValmlnmint', 'MFC2SetValmlnmint', 'MFC3SetValmlnmint', 'MFC4SetValmlnmint', 'MFC5SetValmlnmint'})
+stackedplot(a1, {'MFC1ActValmlnmint', 'MFC2ActValmlnmint', 'MFC3ActValmlnmint', 'MFC4ActValmlnmint', 'MFC5ActValmlnmint'})
