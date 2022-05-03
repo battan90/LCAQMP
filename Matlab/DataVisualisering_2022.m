@@ -49,7 +49,7 @@ end
 % end
 [data, measName] = selection();
 
-[data, felData, clockStartStop, offset] = datafix(data, Kalibrering);
+[data, felData, clockStartStop] = datafix(data, Kalibrering);
 
 %kalibrering(data)
 
@@ -58,7 +58,7 @@ meth = "sgolay";
 
 window = 31;
 
-ploting(data, measName, clockStartStop, meth, window, plotSolo, offset);
+ploting(data, measName, clockStartStop, meth, window, plotSolo);
 
 if ~isempty(fieldnames(felData))
     ploting(felData, ['Data med fel ,', measName], clockStartStop, meth, window, plotSolo);

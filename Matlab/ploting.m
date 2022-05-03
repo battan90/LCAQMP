@@ -1,4 +1,4 @@
-function [] = ploting(data, measName, clockStartStop, pol, window, plotSolo, offset) %
+function [] = ploting(data, measName, clockStartStop, pol, window, plotSolo) %
 %PLOT Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -80,13 +80,15 @@ counter = length(name);
 if plotSolo == 1
     Title = {'PM2.5', 'PM10', 'Relativ luftfuktighet', 'Temperatur', ...
         'CO2', 'VOC', 'NO2', 'O3'};
+    listSelect = listdlg('PromptString', {'Välj vad som ska plottas', ...
+        'Kan välja flera olika samtidigt',''}, 'ListString', Title);
     Legend = {name, name, name, name, name, name, NO2unit, NO2unit};
     Xlabel = {'Tid', 'Tid', 'Tid [min]', 'Tid [min]', 'Tid [min]', ...
         'Tid [min]', 'Tid [min]', 'Tid [min]'};
     Ylabel = {'Halt [Âµg/m3]', 'Halt [Âµg/m3]', ...
         '%', [char(176), 'C'], 'PPB', 'PPB', 'PPB', 'PPB'};
     formatHMS = 'HH:MM:SS';
-    for i = 1:length(Title)
+    for i = 1:length(listSelect)
         figure
         for j = 1:length(name)
             if ~contains(name{j}, 'UNIT')
@@ -97,13 +99,11 @@ if plotSolo == 1
                 plotsetting = {'Color', plotColor.(name{j}), 'LineWidth', 1.5};
             end
             fields = fieldnames(plotData.(name{j}));
-            if i <= length(fields)
-            plot(plotData.(name{j}).(fields{i}){:, 1}, ...
-                plotData.(name{j}).(fields{i}){:, 2}, plotsetting{:});
+            plot(plotData.(name{j}).(fields{listSelect(i)}){:, 1}, ...
+                plotData.(name{j}).(fields{listSelect(i)}){:, 2}, plotsetting{:});
             hold on;
-            end
         end
-        title(Title{i});
+        title(Title(listSelect(i)));
         legend(Legend{i}, 'Location', 'best', 'FontSize', 8);
         legend('boxoff');
         xlabel(Xlabel{i});
