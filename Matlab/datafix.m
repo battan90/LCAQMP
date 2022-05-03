@@ -41,7 +41,7 @@ korr = struct('UNIT1', [1, 0], 'UNIT2', [1.002, -37.44], ...
     'UNIT3', [1.025, -11.84], 'UNIT4', [1.153, 287.5], ...
     'UNIT5', [0.8818, -112.1], 'UNIT6', [0.985, 13.04], 'UNIT7', ...
     [0.9868, -58.27], 'UNIT8', [0.9683, -68.95], 'UNIT9', [0.9979, -11.75], ...
-    'UNIT10', [1, 0], 'Nordstan', [1, 0]);
+    'UNIT10', [1, 0], 'Nordstan', [1, 0], 'Agot790', [1, 0], 'Agot801', [1, 0]);
 dataCommon = struct;
 timeDN = {length(name)};
 
@@ -50,10 +50,13 @@ for i = 1:length(name)
     data.(name{i}).processor_millis = data.(name{i}).processor_millis / ...
         (60 * 1000);
     data.(name{i}).GPS_year = data.(name{i}).GPS_year + 2000;
+    if ~contains(name{i}, 'UNIT')
     data.(name{i}).GPS_hour = data.(name{i}).GPS_hour - 1;
-    %data.(name{i}).NO2 = data.(name{i}).NO2 * 1000;
-    %data.(name{i}).O3 = data.(name{i}).O3 * 1000;
-
+    end
+    %     if ismember('NO2', fieldnames(data.(name{i}))) && ~strcmp(name{i}, 'Nordstan')
+    %     data.(name{i}).NO2 = data.(name{i}).NO2 * 100;
+    %     data.(name{i}).O3 = data.(name{i}).O3 * 100;
+    %     end
     timeDN{i} = datenum(datetime(data.(name{i}).GPS_year, ...
         data.(name{i}).GPS_month, data.(name{i}).GPS_day, ...
         data.(name{i}).GPS_hour, data.(name{i}).GPS_minute, ...
@@ -114,7 +117,6 @@ if sum(tidsFel) ~= length(name)
     commonStart = zeros(1:length(name)-length(tidsFel));
     commonEnd = zeros(1:length(name)-length(tidsFel));
 
-    %felData = data;
     for i = 1:length(name)
         if tidsFel(i)
             felData.(name{i}) = data.(name{i});
@@ -126,7 +128,6 @@ if sum(tidsFel) ~= length(name)
         commonStart(i) = find(timeDN{i} >= datenum(startTime) & ...
             timeDN{i} < now, 1);
         commonEnd(i) = find(timeDN{i} <= datenum(endTime), 1, 'last');
-        %AA = commonEnd(i) - commonStart(i);
         % ändrar vektorerna till att endast omfatta det gemensamma
         % tidsspannet
         dataCommon.(name{i}) = data.(name{i}) ...

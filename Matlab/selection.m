@@ -45,7 +45,8 @@ for i = 1:length(fileID)
         temp = regexp(temp, '\d*', 'Match');
         name(i) = strcat('UNIT', temp{1});
     else
-        name(i) = 'Nordstan';
+        temp = regexp(fileID{i}, '\.', 'split');
+        name(i) = temp{1};
     end
     fileDir = append(path, fileID{i});
     opts = detectImportOptions(fileDir);
