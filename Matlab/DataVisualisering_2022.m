@@ -1,68 +1,78 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Detta script har använts för att visualisera data uppmätt med LCAQMP.
-% Det är lite rörigt, men funkar helt ok för det mesta vid det här
-% laget. Jag försöker förklara lite vad alla delar gör och varför de är
-% där i kommentarer, men jag är 100 % säker på att saker fortfarande är
-% oklara. Ni får gärna höra av er om ni har funderingar så kan jag försöka
-% förklara om jag har tid :) Vill ni ha allmän uppstart eller någon form
-% av genomgång kan ni också höra av er så kan vi nog lösa det!
-% //Axel Eiman
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
+    DataVisualisering_2022   -   Läser in och plottar data från LCAQMP
+    Läser in data på CSV. format som innehåller följande fält:
+    processor_millis, SDS011_pm25, SDS011_pm10, BME680_temperature,
+    BME680_humidity, CCS811_TVOC, GPS_year, GPS_month, GPS_day, GPS_hour,
+    GPS_minute, GPS_seconds, CozIr_Co2_filtered, NO2, O3 och Errors.
+    Framtagen under kandidatarbete för hantering av insamlad data vid
+    mätning av luftkvalitet.
+
+Functions:
+    selection.m     -   Läser in data.
+    datafix.m       -   Formaterar data.
+    ploting.m       -   Plottar data.
+    kalibrering.m   -   Tänk att användas för att kunna kalibrera baserat
+                        referensmätning och sen skriva till .mat fil.
+    print2excel.m   -   Skriver data till Excel i tabellformat.
+
+Författare: Sebastian Boström
+Chalmers Tekniska Högskola
+email: sebbos@student.chalmers.se
+Skapad: 2022-03-10
+Uppdaterad: 2202-05-27
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 clear;
 close all;
 clc;
 format long
+
+% För att i framtiden köra en kalibreringskod, fanns ett initiativ år 2022
+% men fick aldrig vår kalibrering att fungera i brist på bra referens.
+kalibrering = 0;
+
+% För att plotta en typ av mätdata i ett eget fönster. Ovärderligt till
+% rapportskrivningen. 1, skriver i separata fönster. 0, skriver i genemsamt
+% fönster.
+plotSolo = 0;
+
+% Tänkt att användas för att välja mellan om data med GPSfel ska sorteras
+% bort eller inte, dock är den biten inte implementerad. Istället så ger
+% den möjlighet att välja om data med GPSfel ska plottas separat eller inte
+% alls.
+GPSFel = 0;
+
+% Vilken typ av brusreducering som ska användas och hur stort fönstret det
+% appliceras på skall vara. Kolla docs för "smoothing" för fler alternativ.
+meth = "movmean";
+window = 31;
+
 tic
+
+% Gör så att om man stänger ner fönstret för att välja data så avslutas
+% programmet istället för att man får ett fel.
 counter = 1;
-%measName = 'Botaniska, ';
-Kalibrering = 0;
-plotSolo = 1;
-if Kalibrering == 1
-    list = {'SDS011_pm25', 'SDS011_pm10', 'BME680_temperature', ...
-        'BME680_humidity', 'CCS811_TVOC', 'CozIr_Co2_filtered', 'NO2', 'O3'};
-    [indx, tf] = listdlg('PromptString', 'Välj vilken data att kalibrera', ...
-        'SelectionMode', 'single', 'ListString', list);
+while counter
+    try
+        [data, measName] = selection();
+        counter = 0;
+    catch
+        return
+    end
 end
 
-%% Namn på mätningen
-% input = inputdlg("Namn på mätning", "Namn på mätning");
-% if input == ""
-%     measName = 'Mätning, ';
-% else
-%     measName = input;
-% end
-
-%% Öppna fönster för att välja .csv data
-
-% while counter
-%     try
-%         [data, timeDN] = selection();
-%         counter = 0;
-%     catch
-%         A = questdlg('Ingen fil vald', 'Ingen fil vald','Starta om', ...
-%             'Avbryt', 'Avbryt');
-%         switch A
-%             case 'Avbryt'
-%                 return
-%         end
-%     end
-% end
-[data, measName] = selection();
-
-[data, felData, clockStartStop] = datafix(data, Kalibrering);
+[data, felData, clockStartStop] = datafix(data, GPSFel);
 
 %kalibrering(data)
 
+ploting(data, measName, meth, window, plotSolo, clockStartStop);
 
-meth = "sgolay";
-
-window = 31;
-
-ploting(data, measName, clockStartStop, meth, window, plotSolo);
-
-if ~isempty(fieldnames(felData))
-    ploting(felData, ['Data med fel ,', measName], clockStartStop, meth, window, plotSolo);
+if ~isempty(fieldnames(felData)) && GPSFel == 1
+    ploting(felData, ['Data med fel ,', measName], meth, window, plotSolo, clockStartStop);
 end
 
 %print2excel(data);
+
 toc

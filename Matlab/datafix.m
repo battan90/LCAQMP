@@ -1,4 +1,5 @@
-function [dataCommon, felData, clockStartStop] = datafix(data, Kalibrering)
+function [dataCommon, felData, clockStartStop] = datafix(data, ~)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
     Datafix   -   Justerar mätdatan inför plot
     Skapar en gemensam tidslinje för samtlig mätdata med t0 efter den
@@ -8,16 +9,15 @@ Syntax:
     [dataCommon, tidFel, clockStartStop] = datafix(data, timeDN)
 
 Inputs:
-    data                -   Struct med all mätdata
-    timeDN              -   Cellarray med en vektor för varje enhet
-                            innehållande GPS-värden för datum och tid i
-                            datenum-format.
+    data                -   Struct med all mätdata.
+    GPSFel              -   Logisk variabel för att bestämma om man ska
+                            sortera ut data med GPSFel eller ej.
 
 Outputs:
     dataCommon          -   Struct med all mätdata justerad så det är för
-                            samma tidsfönster
-    felData             -   Struct med data som innehåller tidsfel
-    clockStartStop      -   Matris med första och sista tid för varje enhet
+                            samma tidsfönster.
+    felData             -   Struct med data som innehåller tidsfel.
+    clockStartStop      -   Matris med första och sista tid för varje enhet.
 
 Exempel:
 
@@ -27,54 +27,48 @@ Författare: Sebastian Boström
 Chalmers Tekniska Högskola
 email: sebbos@student.chalmers.se
 Skapad: 2022-03-12
+Uppdaterad: 2202-05-27
 %}
-
-%%
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 disp('Setting up plot and clock...')
 clockStartStop = string;
-tidsFel = zeros([1, length(fieldnames(data))]);
+tidsFel = false([1, length(fieldnames(data))]);
 name = fieldnames(data);
+% Vektor för att sedan kolla så att datan ligger inom rätt år. (GPS fel)
 years = [2015, year(datetime(now, 'ConvertFrom', 'datenum'))];
-korr = struct('UNIT1', [1, 0], 'UNIT2', [1.002, -37.44], ...
-    'UNIT3', [1.025, -11.84], 'UNIT4', [1.153, 287.5], ...
-    'UNIT5', [0.8818, -112.1], 'UNIT6', [0.985, 13.04], 'UNIT7', ...
-    [0.9868, -58.27], 'UNIT8', [0.9683, -68.95], 'UNIT9', [0.9979, -11.75], ...
-    'UNIT10', [1, 0]);
-% offset = struct('UNIT1', 0, 'UNIT2', 0, ...
-%     'UNIT3', 0, 'UNIT4', 0, ...
-%     'UNIT5', 130.2, 'UNIT6', -13.31, 'UNIT7', ...
-%     0, 'UNIT8', 71.16, 'UNIT9', 11.93, ...
-%     'UNIT10', 0);
 dataCommon = struct;
 timeDN = {length(name)};
 
 for i = 1:length(name)
     fprintf("... for %s\n", name{i})
+    % Gör processor_millis till minuter
     data.(name{i}).processor_millis = data.(name{i}).processor_millis / ...
         (60 * 1000);
+    % GPSen, loggar bara sista två värdena i året, lägger till 20 i början.
     data.(name{i}).GPS_year = data.(name{i}).GPS_year + 2000;
-    if contains(name{i}, 'UNIT')
-        data.(name{i}).GPS_hour = data.(name{i}).GPS_hour - 1;
-        data.(name{i}).CozIr_Co2_filtered = ...
-            (data.(name{i}).CozIr_Co2_filtered - korr.(name{i})(2)) ./ ...
-            korr.(name{i})(1);
-    end
-    %     if ismember('NO2', fieldnames(data.(name{i}))) && ~strcmp(name{i}, 'Nordstan')
-    %     data.(name{i}).NO2 = data.(name{i}).NO2 * 100;
-    %     data.(name{i}).O3 = data.(name{i}).O3 * 100;
-    %     end
-    timeDN{i} = datenum(datetime(data.(name{i}).GPS_year, ...
+    
+    % Justerar för sommar-/vintertid
+    % Skapar en vektor med DD-MMM-YYYY HH:MM:SS.
+    tDT = datetime(data.(name{i}).GPS_year, ...
         data.(name{i}).GPS_month, data.(name{i}).GPS_day, ...
         data.(name{i}).GPS_hour, data.(name{i}).GPS_minute, ...
-        data.(name{i}).GPS_seconds));
-
-
-    % Säkerställer så att datan in har en fullständigt tidsfel.
-    if data.(name{i}).GPS_year(floor(length(data.(name{i}).GPS_year)/2)) >= years(1) && ...
-            data.(name{i}).GPS_year(end) <= years(2)
-        % Hittar första tiden utan fel.
+        data.(name{i}).GPS_seconds, 'TimeZone', 'Europe/Zurich');
+    % Skapar logiskvektor för vilka värden som är sommartid.
+    tisdst = isdst(tDT);
+    % Gör vektorn till datenum för att senare kunna jämföra tider på ett
+    % vettigt sätt.
+    tDN = datenum(tDT);
+    % Lägger till UTC + X där X är 1 eller 2 beroende på om det är
+    % sommartid eller inte.
+    timeDN{i} = tDN + (tisdst + 1) ./ 24;
+    
+    % Ett försök att säkerställa så att inte all data har GPSfel. Kan göras
+    % mycket snyggare
+    if data.(name{i}).GPS_year(floor(length(data.(name{i}).GPS_year)/2)) ...
+            >= years(1) && data.(name{i}).GPS_year(end) <= years(2)
+        % Söker efter första tiden utan GPSfel, genom att kolla efter
+        % Errors framifrån.
         for j = 1:length(timeDN{i})
             if ~contains(char(data.(name{i}).Errors{j}), ...
                     'GPS') && years(1) < data.(name{i}).GPS_year(j) && ...
@@ -84,52 +78,60 @@ for i = 1:length(name)
             end
             mini = j;
         end
-
+        % Söker efter sista tiden utan GPSfel, genom att kolla efter
+        % Errors bakifrån.
         for j = length(timeDN{i}):-1:1
             if ~contains(char(data.(name{i}).Errors{j}), 'GPS')
                 maxi = j;
                 break
             end
         end
-        % Dessa anger start & slutvärde.
+        % Lagrar första och sista mätpunkten för enheten.
         clockStartStop(1, i) = datetime(timeDN{i}(mini), ...
             'ConvertFrom', 'datenum');
         clockStartStop(2, i) = datetime(timeDN{i}(maxi), ...
             'ConvertFrom', 'datenum');
     else
-        tidsFel(i) = 1;
+        % Om enheten har kontinuerligt GPSfel får den start- och stopptid
+        % 0.
+        tidsFel(i) = true;
         clockStartStop(1, i) = 0;
         clockStartStop(2, i) = 0;
     end
 end
-tidsFel = tidsFel > 0;
-clockStartStop(:, tidsFel) = [];
+% Tar bort felaktig data från start och stopp för mätningen. Viktigt att
+% tidsFel är en logisk vektor, annars krashar MATLAB. Mycket konstigt.
+if sum(tidsFel) > 0
+    clockStartStop(:, tidsFel) = [];
+end
 felData = struct;
 
 %%
-if sum(tidsFel) == 0 %~= length(name)
-    % Loopar för att hitta den tidpunkt då samtliga enheter loggar samt den
-    % tidpunkt då första enheten stängs av.
-
+if sum(tidsFel) ~= length(name)
+    
+    % Hittar den sista starttiden bland enheterna och den första
+    % stopptiden.
     disp('Finding start and end time...')
     startTime = datetime(max(datenum(clockStartStop(1, :))), ...
         'ConvertFrom', 'datenum');
     endTime = datetime(min(datenum(clockStartStop(2, :))), ...
         'ConvertFrom', 'datenum');
-
+    
     %%
-
+    
     disp('Syncing up measurement data...')
-
+    
     commonStart = zeros(1:length(name)-length(tidsFel));
     commonEnd = zeros(1:length(name)-length(tidsFel));
-
+    
     for i = 1:length(name)
-        %         if tidsFel(i)
-        %             felData.(name{i}) = data.(name{i});
-        %             data = rmfield(data, name{i});
-        %             continue
-        %         end
+        % Tar bort data med GPSfel från mätningen. Den ställer till
+        % det en del om den ska plottas med resten annars.
+        if tidsFel(i)
+            felData.(name{i}) = data.(name{i});
+            data = rmfield(data, name{i});
+            continue
+        end
         % nedan ska ange index för gemensam start- respektive sluttid för
         % alla mätare
         commonStart(i) = find(timeDN{i} >= datenum(startTime) & ...
@@ -144,49 +146,22 @@ if sum(tidsFel) == 0 %~= length(name)
             dataCommon.(name{i}).processor_millis - ...
             dataCommon.(name{i}).processor_millis(1);
     end
-
-    %% Utvärderar CO2 sensorn, plockar ut felvärden
-    % CO2 sensorn har möjlighet att mäta mellan 0-5000.
-
-    disp('Evaluating CO2 values...')
-    name = fieldnames(data);
-    for i = 1:length(name)
-        if data.(name{i}).CozIr_Co2_filtered(1) > 5000 %|| CO2{unitID}(ii) < 50
-            msgbox('För höga värden för CO2 på %s', name{i});
-        end
-        % Tar bort värden som innebär att de troligtvis inte stämmer
-        if max(contains(data.(name{i}).Errors, 'CozIR'))
-            data.(name{i}).CozIr_Co2(contains(data.(name{i}).(width(data.(name{i}))), ...
-                'CozIR')) = NaN();
-            data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}).(width(data.(name{i}))), ...
-                'CozIR')) = NaN();
-        end
-    end
-
+    
 else
-    % Justerar felvärden för CO2 om all data har tidsfel
-
-    disp('Evaluating CO2 values...')
-    name = fieldnames(data);
-    for i = 1:length(name)
-        if data.(name{i}).CozIr_Co2_filtered(1) > 5000
-            msgbox('För höga värden för CO2 på %s', name{i});
-        end
-        % Tar bort värden som innebär att de troligtvis inte stämmer
-        if contains(data.(name{i}).Errors, 'CozIR')
-            data.(name{i}).CozIr_Co2(contains(data.(name{i}). ...
-                Errors, 'CozIR')) = NaN();
-            data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}). ...
-                Errors, 'CozIR')) = NaN();
-        end
+    dataCommon = data;
+end
+disp('Evaluating CO2 values...')
+name = fieldnames(data);
+for i = 1:length(name)
+    if data.(name{i}).CozIr_Co2_filtered(1) > 5000
+        msgbox('För höga värden för CO2 på %s', name{i});
     end
-    if Kalibrering == 1
-        for i = 1:length(name)
-            dataCommon.(name{i}) = data.(name{i})(1:min(structfun(@height, data)), :);
-        end
-    else
-        dataCommon = data;
-
+    % Tar bort värden som innebär att de troligtvis inte stämmer
+    if contains(data.(name{i}).Errors, 'CozIR')
+        data.(name{i}).CozIr_Co2(contains(data.(name{i}). ...
+            Errors, 'CozIR')) = NaN();
+        data.(name{i}).CozIr_Co2_filtered(contains(data.(name{i}). ...
+            Errors, 'CozIR')) = NaN();
     end
 end
 end
